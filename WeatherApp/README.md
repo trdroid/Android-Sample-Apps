@@ -102,7 +102,7 @@ This build could be faster, please consider using the Gradle Daemon: http://grad
 
 ### Testing on a physical device
 
-List out the attached devices 
+List out attached devices 
 
 > WeatherApp$ adb devices
 
@@ -150,9 +150,9 @@ Bus 003 Device 001: ID 1d6b:0002 Linux Foundation 2.0 root hub
 
 *References*
 
-(http://developer.android.com/tools/device.html)
+<http://developer.android.com/tools/device.html>
 
-(http://bernaerts.dyndns.org/linux/74-ubuntu/328-ubuntu-trusty-android-adb-fastboot-qtadb)
+<http://bernaerts.dyndns.org/linux/74-ubuntu/328-ubuntu-trusty-android-adb-fastboot-qtadb>
 
 **Verify if the device is detected**
 
@@ -227,3 +227,12 @@ app-debug.apk  app-debug-unaligned.apk
 
 -r, a switch to install subcommand => replace existing application
 
+**Start the MainActivity**
+
+> WeatherApp$ adb -d shell am start -n com.gruprog.weatherapp/com.gruprog.weatherapp.MainActivity
+
+-d, a switch to adb command => directs command to the only connected USB device
+
+adb shell \<command\> => run remote shell command
+
+Use the activity manager tool (am) to start the MainActivity.
