@@ -227,7 +227,7 @@ app-debug.apk  app-debug-unaligned.apk
 
 -r, a switch to install subcommand => replace existing application
 
-**Start the MainActivity**
+**Start MainActivity from the command line**
 
 > WeatherApp$ adb -d shell am start -n com.gruprog.weatherapp/com.gruprog.weatherapp.MainActivity
 
