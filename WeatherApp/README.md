@@ -1,6 +1,12 @@
 **Running Gradle from the Command line**
 
-> $ WeatherApp$ ./gradlew tasks
+> WeatherApp$ ls
+
+```
+app  build  build.gradle  gradle  gradle.properties  gradlew  gradlew.bat  local.properties  README.md  settings.gradle  WeatherApp.iml
+```
+
+> WeatherApp$ ./gradlew tasks
 
 ```
 Downloading https://services.gradle.org/distributions/gradle-2.4-all.zip
