@@ -150,9 +150,9 @@ Bus 003 Device 001: ID 1d6b:0002 Linux Foundation 2.0 root hub
 
 *References*
 
-http://developer.android.com/tools/device.html
+![](http://developer.android.com/tools/device.html)
 
-http://bernaerts.dyndns.org/linux/74-ubuntu/328-ubuntu-trusty-android-adb-fastboot-qtadb
+![](http://bernaerts.dyndns.org/linux/74-ubuntu/328-ubuntu-trusty-android-adb-fastboot-qtadb)
 
 **Verify if the device is detected**
 
