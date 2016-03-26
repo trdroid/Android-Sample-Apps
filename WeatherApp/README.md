@@ -100,6 +100,70 @@ Total time: 1 mins 43.7 secs
 This build could be faster, please consider using the Gradle Daemon: http://gradle.org/docs/2.4/userguide/gradle_daemon.html
 ```
 
+### Testing on a physical device
+
+List out the attached devices 
+
+> WeatherApp$ adb devices
+
+```
+List of devices attached
+emulator-5554	device
+```
+**Enable USB Debugging on the device**
+
+Connect an Android device to the laptop
+
+Go to Settings -> About Phone and tap on Build Number option for 7 times to "unhide" Setting -> Developer Options menu.
+
+In Setting -> Developer Options, Turn on USB Debugging
+
+**Setup computer to detect device**
+
+Not sure if following any of these helped, but I tried them before I was able to install the app on the device.
+
+*Created the following file*
+
+/etc/udev/rules.d/51-android.rules
+
+with the following content
+
+SUBSYSTEM=="usb", ATTR{idVendor}=="18d1", MODE="0666", GROUP="plugdev"
+
+> sudo service udev restart
+
+> lsusb
+
+```
+Bus 002 Device 002: ID 8087:0024 Intel Corp. Integrated Rate Matching Hub
+Bus 002 Device 001: ID 1d6b:0002 Linux Foundation 2.0 root hub
+Bus 001 Device 005: ID 0c45:64ad Microdia 
+Bus 001 Device 004: ID 0bda:0129 Realtek Semiconductor Corp. RTS5129 Card Reader Controller
+Bus 001 Device 003: ID 8087:07da Intel Corp. 
+Bus 001 Device 002: ID 8087:0024 Intel Corp. Integrated Rate Matching Hub
+Bus 001 Device 001: ID 1d6b:0002 Linux Foundation 2.0 root hub
+Bus 004 Device 001: ID 1d6b:0003 Linux Foundation 3.0 root hub
+Bus 003 Device 002: ID 046d:c52f Logitech, Inc. Unifying Receiver
+Bus 003 Device 037: ID 18d1:4ee2 Google Inc. Nexus 4 (debug)
+Bus 003 Device 001: ID 1d6b:0002 Linux Foundation 2.0 root hub
+```
+
+*References*
+
+http://developer.android.com/tools/device.html
+
+http://bernaerts.dyndns.org/linux/74-ubuntu/328-ubuntu-trusty-android-adb-fastboot-qtadb
+
+**Verify if the device is detected**
+
+> WeatherApp$ adb devices
+
+```
+List of devices attached
+06f3f1240074bbbd	device   <-----
+emulator-5554	device
+```
+
 **Build the app from the command line using gradle**
 
 Grant execution permission to the gradle wrapper script, if needed.
@@ -147,7 +211,7 @@ Total time: 25.355 secs
 This build could be faster, please consider using the Gradle Daemon: http://gradle.org/docs/2.4/userguide/gradle_daemon.html
 ```
 
-The apk file is generated in *WeatherApp/app/build/outputs/apk* directory
+The apk file is generated at *WeatherApp/app/build/outputs/apk* directory
 
 > WeatherApp$ ls app/build/outputs/apk
 
@@ -155,57 +219,11 @@ The apk file is generated in *WeatherApp/app/build/outputs/apk* directory
 app-debug.apk  app-debug-unaligned.apk
 ```
 
-### Testing on a physical device
+**Install app on the physical device from the command line**
 
-List out the attached devices 
+> WeatherApp$ adb -d install -r app/build/outputs/apk/app-debug-unaligned.apk
 
-> WeatherApp$ adb devices
+-d, a switch to adb command => directs command to the only connected USB device
 
-List of devices attached
-
-```
-emulator-5554	device
-```
-
-Connect an Android device to the laptop
-
-Go to Settings -> About Phone and tap on Build Number option for 7 times to display the Setting -> Developer Options menu.
-
-In Setting -> Developer Options, Turn on USB Debugging
-
-**Setup computer to detect device**
-
-Not sure if following any of these helped, but I tried them before I was able to install the app on the device.
-
-*Created the following file*
-
-/etc/udev/rules.d/51-android.rules
-
-with the following content
-
-SUBSYSTEM=="usb", ATTR{idVendor}=="18d1", MODE="0666", GROUP="plugdev"
-
-> sudo service udev restart
-
-> lsusb
-
-```
-Bus 002 Device 002: ID 8087:0024 Intel Corp. Integrated Rate Matching Hub
-Bus 002 Device 001: ID 1d6b:0002 Linux Foundation 2.0 root hub
-Bus 001 Device 005: ID 0c45:64ad Microdia 
-Bus 001 Device 004: ID 0bda:0129 Realtek Semiconductor Corp. RTS5129 Card Reader Controller
-Bus 001 Device 003: ID 8087:07da Intel Corp. 
-Bus 001 Device 002: ID 8087:0024 Intel Corp. Integrated Rate Matching Hub
-Bus 001 Device 001: ID 1d6b:0002 Linux Foundation 2.0 root hub
-Bus 004 Device 001: ID 1d6b:0003 Linux Foundation 3.0 root hub
-Bus 003 Device 002: ID 046d:c52f Logitech, Inc. Unifying Receiver
-Bus 003 Device 037: ID 18d1:4ee2 Google Inc. Nexus 4 (debug)
-Bus 003 Device 001: ID 1d6b:0002 Linux Foundation 2.0 root hub
-```
-
-*References*
-
-http://developer.android.com/tools/device.html
-
-http://bernaerts.dyndns.org/linux/74-ubuntu/328-ubuntu-trusty-android-adb-fastboot-qtadb
+-r, a switch to install subcommand => replace existing application
 
