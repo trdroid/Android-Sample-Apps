@@ -525,6 +525,7 @@ public class MainFragment extends Fragment {
 }
 ```
 
+After adding the above code, running the app results in the following error:
 
 ```
 03-27 17:55:14.468 28208-28208/com.gruprog.weatherapp E/AndroidRuntime: FATAL EXCEPTION: main
@@ -576,3 +577,109 @@ public class MainFragment extends Fragment {
 03-27 17:55:14.468 28208-28208/com.gruprog.weatherapp E/AndroidRuntime:     at com.android.internal.os.ZygoteInit$MethodAndArgsCaller.run(ZygoteInit.java:903) 
 03-27 17:55:14.468 28208-28208/com.gruprog.weatherapp E/AndroidRuntime:     at com.android.internal.os.ZygoteInit.main(ZygoteInit.java:698) 
 ```
+
+Notice the following lines from the above log.
+
+```
+03-27 17:55:14.468 28208-28208/com.gruprog.weatherapp E/AndroidRuntime:     at com.gruprog.weatherapp.MainFragment.getWeatherData(MainFragment.java:76)
+03-27 17:55:14.468 28208-28208/com.gruprog.weatherapp E/AndroidRuntime:     at com.gruprog.weatherapp.MainFragment.onCreateView(MainFragment.java:55)
+```
+
+It could be inferred that *android.os.NetworkOnMainThreadException* was caused by the following line in the Fragment class
+
+```java
+public class MainFragment extends Fragment {
+    private static final String TAG = MainFragment.class.getName();
+
+    ArrayAdapter<String> weatherDataAdapter;
+
+    @Nullable
+    @Override
+    public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
+        String[] weatherData = {
+                "Monday",
+                "Tuesday",
+                "Wednesday",
+                "Thursday",
+                "Friday",
+                "Saturday",
+                "Sunday"
+        };
+
+        List<String> weatherDataList = new ArrayList<>(Arrays.asList(weatherData));
+
+        weatherDataAdapter = new ArrayAdapter<>(
+                this.getActivity(),
+                R.layout.day_weather_forecast_list_item_layout, /* Point to the resource ID of the layout that contains the view for each item in the list */
+                R.id.day_weather_forecast_list_item_text_view, /* Point to the resource ID of the View in the above specified layout, that the adapter
+                 instantiates per (and initializes with each) data element to display a list of those views/data items in the ListView. */
+                weatherDataList);
+
+        View rootView = inflater.inflate(R.layout.fragment_main, container, false);
+
+        ListView listView = (ListView) rootView.findViewById(R.id.weather_forecast_list_view);
+        listView.setAdapter(weatherDataAdapter);
+
+        String weatherDataFromOpenWeatherApi = getWeatherData(); 
+
+        return rootView;
+    }
+
+    private String getWeatherData() {
+        HttpURLConnection urlConnection = null;
+        BufferedReader bufferedReader = null;
+
+        StringBuffer responseBuffer = new StringBuffer();
+
+        try {
+            String baseUrl = "http://api.openweathermap.org/data/2.5/forecast/daily?q=94043&mode=json&units=metric&cnt=7";
+            String apiKey = "&APPID=" + BuildConfig.OPEN_WEATHER_MAP_API_KEY; 
+
+            //Construct the url to access openweathermap api
+            URL url = new URL(baseUrl.concat(apiKey));
+
+            //Make a request by connecting to the openweathermap api
+            urlConnection = (HttpURLConnection) url.openConnection();
+            urlConnection.setRequestMethod("GET");
+            urlConnection.connect();   <------------------------
+
+            //Read the response
+            InputStream inputStream = urlConnection.getInputStream();
+
+            if(inputStream == null) {
+                return null;
+            }
+
+            bufferedReader = new BufferedReader(new InputStreamReader(inputStream));
+
+            String line = null;
+
+            while ((line = bufferedReader.readLine()) != null) {
+                /*
+                    adding a new line clearly formats json string, which is helpful when printed to the console
+                 */
+                responseBuffer.append(line + "\n");
+            }
+
+            if(responseBuffer != null) {
+                Log.d(TAG, responseBuffer.toString());
+            }
+        }catch (IOException e) {
+            Log.e(TAG, "Error occurred", e);
+        } finally {
+            if(urlConnection != null) {
+                urlConnection.disconnect();
+            }
+
+            if(bufferedReader != null) {
+                try {
+                    bufferedReader.close();
+                }catch(IOException e) {
+                    Log.e(TAG, "Error occurred while closing stream", e);
+                }
+            }
+        }
+
+        return (responseBuffer.length() == 0 ? null : responseBuffer.toString());
+    }
+}```
