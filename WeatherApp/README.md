@@ -385,7 +385,194 @@ The approach to get the weather information from the API is
 
 * Make an HTTP request to the API
 * Read the response from the input stream
-* Log the errors, if any
-* Disconnect and Clean up the input stream
+* Log errors, if any
+* Disconnect and clean up
+
+Add the following in *WeatherApp/app/build.gradle*
+
+```groovy
+apply plugin: 'com.android.application'
+
+android {
+    compileSdkVersion 23
+    buildToolsVersion "23.0.2"
+
+    defaultConfig {
+        applicationId "com.gruprog.weatherapp"
+        minSdkVersion 16
+        targetSdkVersion 23
+        versionCode 1
+        versionName "1.0"
+    }
+    buildTypes {
+        release {
+            minifyEnabled false
+            proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
+        }
+    }
+
+    buildTypes.each {    <----------
+        it.buildConfigField 'String', 'OPEN_WEATHER_MAP_API_KEY', '"<API KEY OBTAINED FROM THE SITE>"'
+    }
+}
+
+dependencies {
+    compile fileTree(dir: 'libs', include: ['*.jar'])
+    testCompile 'junit:junit:4.12'
+    compile 'com.android.support:appcompat-v7:23.1.1'
+    compile 'com.android.support:design:23.1.1'
+}
+```
+
+The above snippet automatically generates a field in BuildConfig.java called OPEN_WEATHER_MAP_API_KEY of type String with the API key supplied to it as its value. This field can then be referred to in code.
 
 
+```java
+public class MainFragment extends Fragment {
+    private static final String TAG = MainFragment.class.getName();
+
+    ArrayAdapter<String> weatherDataAdapter;
+
+    @Nullable
+    @Override
+    public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
+        String[] weatherData = {
+                "Monday",
+                "Tuesday",
+                "Wednesday",
+                "Thursday",
+                "Friday",
+                "Saturday",
+                "Sunday"
+        };
+
+        List<String> weatherDataList = new ArrayList<>(Arrays.asList(weatherData));
+
+        weatherDataAdapter = new ArrayAdapter<>(
+                this.getActivity(),
+                R.layout.day_weather_forecast_list_item_layout, /* Point to the resource ID of the layout that contains the view for each item in the list */
+                R.id.day_weather_forecast_list_item_text_view, /* Point to the resource ID of the View in the above specified layout, that the adapter
+                 instantiates per (and initializes with each) data element to display a list of those views/data items in the ListView. */
+                weatherDataList);
+
+        View rootView = inflater.inflate(R.layout.fragment_main, container, false);
+
+        ListView listView = (ListView) rootView.findViewById(R.id.weather_forecast_list_view);
+        listView.setAdapter(weatherDataAdapter);
+
+        String weatherDataFromOpenWeatherApi = getWeatherData();  <---------------------
+
+        return rootView;
+    }
+
+    private String getWeatherData() {  <-----------------------
+        HttpURLConnection urlConnection = null;
+        BufferedReader bufferedReader = null;
+
+        StringBuffer responseBuffer = new StringBuffer();
+
+        try {
+            String baseUrl = "http://api.openweathermap.org/data/2.5/forecast/daily?q=94043&mode=json&units=metric&cnt=7";
+            String apiKey = "&APPID=" + BuildConfig.OPEN_WEATHER_MAP_API_KEY;  <----------------------
+
+            //Construct the url to access openweathermap api
+            URL url = new URL(baseUrl.concat(apiKey));
+
+            //Make a request by connecting to the openweathermap api
+            urlConnection = (HttpURLConnection) url.openConnection();
+            urlConnection.setRequestMethod("GET");
+            urlConnection.connect();
+
+            //Read the response
+            InputStream inputStream = urlConnection.getInputStream();
+
+            if(inputStream == null) {
+                return null;
+            }
+
+            bufferedReader = new BufferedReader(new InputStreamReader(inputStream));
+
+            String line = null;
+
+            while ((line = bufferedReader.readLine()) != null) {
+                /*
+                    adding a new line clearly formats json string, which is helpful when printed to the console
+                 */
+                responseBuffer.append(line + "\n");
+            }
+
+            if(responseBuffer != null) {
+                Log.d(TAG, responseBuffer.toString());
+            }
+        }catch (IOException e) {
+            Log.e(TAG, "Error occurred", e);
+        } finally {
+            if(urlConnection != null) {
+                urlConnection.disconnect();
+            }
+
+            if(bufferedReader != null) {
+                try {
+                    bufferedReader.close();
+                }catch(IOException e) {
+                    Log.e(TAG, "Error occurred while closing stream", e);
+                }
+            }
+        }
+
+        return (responseBuffer.length() == 0 ? null : responseBuffer.toString());
+    }
+}
+```
+
+
+```
+03-27 17:55:14.468 28208-28208/com.gruprog.weatherapp E/AndroidRuntime: FATAL EXCEPTION: main
+03-27 17:55:14.468 28208-28208/com.gruprog.weatherapp E/AndroidRuntime: Process: com.gruprog.weatherapp, PID: 28208
+03-27 17:55:14.468 28208-28208/com.gruprog.weatherapp E/AndroidRuntime: java.lang.RuntimeException: Unable to start activity ComponentInfo{com.gruprog.weatherapp/com.gruprog.weatherapp.MainActivity}: android.os.NetworkOnMainThreadException
+03-27 17:55:14.468 28208-28208/com.gruprog.weatherapp E/AndroidRuntime:     at android.app.ActivityThread.performLaunchActivity(ActivityThread.java:2325)
+03-27 17:55:14.468 28208-28208/com.gruprog.weatherapp E/AndroidRuntime:     at android.app.ActivityThread.handleLaunchActivity(ActivityThread.java:2387)
+03-27 17:55:14.468 28208-28208/com.gruprog.weatherapp E/AndroidRuntime:     at android.app.ActivityThread.access$800(ActivityThread.java:151)
+03-27 17:55:14.468 28208-28208/com.gruprog.weatherapp E/AndroidRuntime:     at android.app.ActivityThread$H.handleMessage(ActivityThread.java:1303)
+03-27 17:55:14.468 28208-28208/com.gruprog.weatherapp E/AndroidRuntime:     at android.os.Handler.dispatchMessage(Handler.java:102)
+03-27 17:55:14.468 28208-28208/com.gruprog.weatherapp E/AndroidRuntime:     at android.os.Looper.loop(Looper.java:135)
+03-27 17:55:14.468 28208-28208/com.gruprog.weatherapp E/AndroidRuntime:     at android.app.ActivityThread.main(ActivityThread.java:5254)
+03-27 17:55:14.468 28208-28208/com.gruprog.weatherapp E/AndroidRuntime:     at java.lang.reflect.Method.invoke(Native Method)
+03-27 17:55:14.468 28208-28208/com.gruprog.weatherapp E/AndroidRuntime:     at java.lang.reflect.Method.invoke(Method.java:372)
+03-27 17:55:14.468 28208-28208/com.gruprog.weatherapp E/AndroidRuntime:     at com.android.internal.os.ZygoteInit$MethodAndArgsCaller.run(ZygoteInit.java:903)
+03-27 17:55:14.468 28208-28208/com.gruprog.weatherapp E/AndroidRuntime:     at com.android.internal.os.ZygoteInit.main(ZygoteInit.java:698)
+03-27 17:55:14.468 28208-28208/com.gruprog.weatherapp E/AndroidRuntime:  Caused by: android.os.NetworkOnMainThreadException   <----------------------------------------------
+03-27 17:55:14.468 28208-28208/com.gruprog.weatherapp E/AndroidRuntime:     at android.os.StrictMode$AndroidBlockGuardPolicy.onNetwork(StrictMode.java:1147)
+03-27 17:55:14.468 28208-28208/com.gruprog.weatherapp E/AndroidRuntime:     at java.net.InetAddress.lookupHostByName(InetAddress.java:418)
+03-27 17:55:14.468 28208-28208/com.gruprog.weatherapp E/AndroidRuntime:     at java.net.InetAddress.getAllByNameImpl(InetAddress.java:252)
+03-27 17:55:14.468 28208-28208/com.gruprog.weatherapp E/AndroidRuntime:     at java.net.InetAddress.getAllByName(InetAddress.java:215)
+03-27 17:55:14.468 28208-28208/com.gruprog.weatherapp E/AndroidRuntime:     at com.android.okhttp.HostResolver$1.getAllByName(HostResolver.java:29)
+03-27 17:55:14.468 28208-28208/com.gruprog.weatherapp E/AndroidRuntime:     at com.android.okhttp.internal.http.RouteSelector.resetNextInetSocketAddress(RouteSelector.java:232)
+03-27 17:55:14.468 28208-28208/com.gruprog.weatherapp E/AndroidRuntime:     at com.android.okhttp.internal.http.RouteSelector.next(RouteSelector.java:124)
+03-27 17:55:14.468 28208-28208/com.gruprog.weatherapp E/AndroidRuntime:     at com.android.okhttp.internal.http.HttpEngine.connect(HttpEngine.java:272)
+03-27 17:55:14.468 28208-28208/com.gruprog.weatherapp E/AndroidRuntime:     at com.android.okhttp.internal.http.HttpEngine.sendRequest(HttpEngine.java:211)
+03-27 17:55:14.468 28208-28208/com.gruprog.weatherapp E/AndroidRuntime:     at com.android.okhttp.internal.http.HttpURLConnectionImpl.execute(HttpURLConnectionImpl.java:382)
+03-27 17:55:14.468 28208-28208/com.gruprog.weatherapp E/AndroidRuntime:     at com.android.okhttp.internal.http.HttpURLConnectionImpl.connect(HttpURLConnectionImpl.java:106)
+03-27 17:55:14.468 28208-28208/com.gruprog.weatherapp E/AndroidRuntime:     at com.gruprog.weatherapp.MainFragment.getWeatherData(MainFragment.java:76)
+03-27 17:55:14.468 28208-28208/com.gruprog.weatherapp E/AndroidRuntime:     at com.gruprog.weatherapp.MainFragment.onCreateView(MainFragment.java:55)
+03-27 17:55:14.468 28208-28208/com.gruprog.weatherapp E/AndroidRuntime:     at android.support.v4.app.Fragment.performCreateView(Fragment.java:1962)
+03-27 17:55:14.468 28208-28208/com.gruprog.weatherapp E/AndroidRuntime:     at android.support.v4.app.FragmentManagerImpl.moveToState(FragmentManager.java:1067)
+03-27 17:55:14.468 28208-28208/com.gruprog.weatherapp E/AndroidRuntime:     at android.support.v4.app.FragmentManagerImpl.moveToState(FragmentManager.java:1248)
+03-27 17:55:14.468 28208-28208/com.gruprog.weatherapp E/AndroidRuntime:     at android.support.v4.app.BackStackRecord.run(BackStackRecord.java:738)
+03-27 17:55:14.468 28208-28208/com.gruprog.weatherapp E/AndroidRuntime:     at android.support.v4.app.FragmentManagerImpl.execPendingActions(FragmentManager.java:1613)
+03-27 17:55:14.468 28208-28208/com.gruprog.weatherapp E/AndroidRuntime:     at android.support.v4.app.FragmentController.execPendingActions(FragmentController.java:330)
+03-27 17:55:14.468 28208-28208/com.gruprog.weatherapp E/AndroidRuntime:     at android.support.v4.app.FragmentActivity.onStart(FragmentActivity.java:547)
+03-27 17:55:14.468 28208-28208/com.gruprog.weatherapp E/AndroidRuntime:     at android.app.Instrumentation.callActivityOnStart(Instrumentation.java:1236)
+03-27 17:55:14.468 28208-28208/com.gruprog.weatherapp E/AndroidRuntime:     at android.app.Activity.performStart(Activity.java:6006)
+03-27 17:55:14.468 28208-28208/com.gruprog.weatherapp E/AndroidRuntime:     at android.app.ActivityThread.performLaunchActivity(ActivityThread.java:2288)
+03-27 17:55:14.468 28208-28208/com.gruprog.weatherapp E/AndroidRuntime:     at android.app.ActivityThread.handleLaunchActivity(ActivityThread.java:2387) 
+03-27 17:55:14.468 28208-28208/com.gruprog.weatherapp E/AndroidRuntime:     at android.app.ActivityThread.access$800(ActivityThread.java:151) 
+03-27 17:55:14.468 28208-28208/com.gruprog.weatherapp E/AndroidRuntime:     at android.app.ActivityThread$H.handleMessage(ActivityThread.java:1303) 
+03-27 17:55:14.468 28208-28208/com.gruprog.weatherapp E/AndroidRuntime:     at android.os.Handler.dispatchMessage(Handler.java:102) 
+03-27 17:55:14.468 28208-28208/com.gruprog.weatherapp E/AndroidRuntime:     at android.os.Looper.loop(Looper.java:135) 
+03-27 17:55:14.468 28208-28208/com.gruprog.weatherapp E/AndroidRuntime:     at android.app.ActivityThread.main(ActivityThread.java:5254) 
+03-27 17:55:14.468 28208-28208/com.gruprog.weatherapp E/AndroidRuntime:     at java.lang.reflect.Method.invoke(Native Method) 
+03-27 17:55:14.468 28208-28208/com.gruprog.weatherapp E/AndroidRuntime:     at java.lang.reflect.Method.invoke(Method.java:372) 
+03-27 17:55:14.468 28208-28208/com.gruprog.weatherapp E/AndroidRuntime:     at com.android.internal.os.ZygoteInit$MethodAndArgsCaller.run(ZygoteInit.java:903) 
+03-27 17:55:14.468 28208-28208/com.gruprog.weatherapp E/AndroidRuntime:     at com.android.internal.os.ZygoteInit.main(ZygoteInit.java:698) 
+```
