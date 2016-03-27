@@ -251,7 +251,39 @@ Use the activity manager tool (am) to start the MainActivity.
 
 # Creating a list of weather forecasts with Mock Data
 
+**Create a layout for the MainActivity**
+
+```xml
+<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:id="@+id/root_container"    -------------
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+/>
+```
+
 ## Creating a fragment to display a list of weather forecasts
 
 **Creating a layout for the fragment**
 
+```xml
+<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:paddingRight="@dimen/activity_horizontal_margin"
+    android:paddingTop="@dimen/activity_vertical_margin"
+    android:paddingBottom="@dimen/activity_vertical_margin"
+    >
+    <ListView 
+        android:id="@+id/weather_forecast_list_view"   -------------
+        android:paddingLeft="@dimen/weather_forecast_list_view_left_margin"
+        android:paddingRight="@dimen/weather_forecast_list_view_left_margin"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:divider="@null"
+        />
+</FrameLayout>
+```
+
+Since the layout of the fragment holds only a single child view i.e. the ListView 
