@@ -292,6 +292,8 @@ Use the activity manager tool (am) to start the MainActivity.
 
 Since the layout of the fragment holds only a single child view i.e. the ListView, it is efficient to use FrameLayout.
 
+The attributes *android:paddingLeft* and *android:paddingRight* are added to the ListView so that each TextView in the ListView appears not exactly aligned with the left edge of the ListView.
+
 **Implementing the Fragment class**
 
 ```java
