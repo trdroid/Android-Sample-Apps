@@ -290,6 +290,8 @@ Use the activity manager tool (am) to start the MainActivity.
 </FrameLayout>
 ```
 
+Since the layout of the fragment holds only a single child view i.e. the ListView, it is efficient to use FrameLayout.
+
 **Implementing the Fragment class**
 
 ```java
@@ -327,15 +329,41 @@ public class MainFragment extends Fragment {
 }
 ```
 
+**Defining the layout file containing the view for each item in the Weather Data List (Mock Data)**
+
+*res/layout/day_weather_forecast_list_item_layout.xml*
+
 ```xml
 <TextView xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
     android:gravity="center_vertical"
     android:minHeight="?android:attr/listPreferredItemHeight"
-    android:id="@+id/day_weather_forecast_list_item_text_view"
+    android:id="@+id/day_weather_forecast_list_item_text_view"   ---------
     />
-
 ```
 
-Since the layout of the fragment holds only a single child view i.e. the ListView 
+*android:minHeight="?android:attr/listPreferredItemHeight"* is specified to give enough room to make the item tappable.
+
+*android:gravity="center_vertical"* is specified to align each weather entry vertically in the center of the TextView it is diplayed in.
+
+**Instantiate the Fragment class in MainActivity**
+
+```java
+public class MainActivity extends AppCompatActivity {
+
+    @Override
+    protected void onCreate(Bundle savedInstanceState) {
+        super.onCreate(savedInstanceState);
+        setContentView(R.layout.activity_main);
+
+        if(savedInstanceState == null) {
+            /*
+                add an instance of the MainFragment at R.id.root_container
+             */
+            getSupportFragmentManager().beginTransaction()
+                    .add(R.id.root_container, new MainFragment())
+                    .commit();
+        }
+    }
+```
