@@ -253,6 +253,8 @@ Use the activity manager tool (am) to start the MainActivity.
 
 **Create a layout for the MainActivity**
 
+*res/layout/activity_main.xml*
+
 ```xml
 <FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools"
@@ -262,9 +264,11 @@ Use the activity manager tool (am) to start the MainActivity.
 />
 ```
 
-## Creating a fragment to display a list of weather forecasts
+## Create a fragment to display a list of weather forecasts
 
 **Creating a layout for the fragment**
+
+*res/layout/fragment_main.xml*
 
 ```xml
 <FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
@@ -284,6 +288,54 @@ Use the activity manager tool (am) to start the MainActivity.
         android:divider="@null"
         />
 </FrameLayout>
+```
+
+**Implementing the Fragment class**
+
+```java
+public class MainFragment extends Fragment {
+    ArrayAdapter<String> weatherDataAdapter;
+
+    @Nullable
+    @Override
+    public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
+        String[] weatherData = {
+                "Monday",
+                "Tuesday",
+                "Wednesday",
+                "Thursday",
+                "Friday",
+                "Saturday",
+                "Sunday"
+        };
+
+        List<String> weatherDataList = new ArrayList<>(Arrays.asList(weatherData));
+
+        weatherDataAdapter = new ArrayAdapter<>(
+                this.getActivity(),
+                R.layout.day_weather_forecast_list_item_layout,
+                R.id.day_weather_forecast_list_item_text_view,
+                weatherDataList);
+
+        View rootView = inflater.inflate(R.layout.fragment_main, container, false);
+
+        ListView listView = (ListView) rootView.findViewById(R.id.weather_forecast_list_view);
+        listView.setAdapter(weatherDataAdapter);
+
+        return rootView;
+    }
+}
+```
+
+```xml
+<TextView xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:gravity="center_vertical"
+    android:minHeight="?android:attr/listPreferredItemHeight"
+    android:id="@+id/day_weather_forecast_list_item_text_view"
+    />
+
 ```
 
 Since the layout of the fragment holds only a single child view i.e. the ListView 
