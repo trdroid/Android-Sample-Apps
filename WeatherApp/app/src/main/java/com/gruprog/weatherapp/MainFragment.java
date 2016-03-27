@@ -34,9 +34,9 @@ public class MainFragment extends Fragment {
         weatherDataAdapter = new ArrayAdapter<>(
                 this.getActivity(),
                 R.layout.day_weather_forecast_list_item_layout, /* Point to the resource ID of the layout that contains the view for each item in the list */
-                R.id.day_weather_forecast_list_item_text_view, /* Point to the resource ID of the TextView in the above specified layout.
-                 The Adapter instantiates a TextView per data element to display a kist of TextViews/Data elements in the ListView. */
-                weatherDataList); 
+                R.id.day_weather_forecast_list_item_text_view, /* Point to the resource ID of the View in the above specified layout, that the adapter
+                 instantiates per (and initializes with each) data element to display a list of those views/data items in the ListView. */
+                weatherDataList);
 
         View rootView = inflater.inflate(R.layout.fragment_main, container, false);
 
