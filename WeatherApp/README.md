@@ -370,3 +370,22 @@ public class MainActivity extends AppCompatActivity {
         }
     }
 ```
+
+-----------------
+
+# Getting Weather Data from http://openweathermap.org/
+
+**Getting an API Key**
+
+Sign up and get an API Key from <http://openweathermap.org/appid>
+
+**Getting weather information from the API**
+
+The approach to get the weather information from the API is 
+
+* Make an HTTP request to the API
+* Read the response from the input stream
+* Log the errors, if any
+* Disconnect and Clean up the input stream
+
+
