@@ -1,4 +1,4 @@
-## Creating the project
+# Creating the project
 
 **Changing the icon**
 
@@ -247,5 +247,11 @@ Use the activity manager tool (am) to start the MainActivity.
 
 ## Running the project from the IDE
 
+-----------
 
+# Creating a list of weather forecasts with Mock Data
+
+## Creating a fragment to display a list of weather forecasts
+
+**Creating a layout for the fragment**
 
