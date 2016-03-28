@@ -784,8 +784,395 @@ As network calls cannot be made on the main thread, refactor the network code to
 
 
 ```java
+public class MainFragment extends Fragment {
+    private static final String TAG = MainFragment.class.getSimpleName();
 
+    ArrayAdapter<String> weatherDataAdapter;
+
+    @Nullable
+    @Override
+    public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
+        String[] weatherData = {
+                "Monday",
+                "Tuesday",
+                "Wednesday",
+                "Thursday",
+                "Friday",
+                "Saturday",
+                "Sunday"
+        };
+
+        List<String> weatherDataList = new ArrayList<>(Arrays.asList(weatherData));
+
+        weatherDataAdapter = new ArrayAdapter<>(
+                this.getActivity(),
+                R.layout.day_weather_forecast_list_item_layout, /* Point to the resource ID of the layout that contains the view for each item in the list */
+                R.id.day_weather_forecast_list_item_text_view, /* Point to the resource ID of the View in the above specified layout, that the adapter
+                 instantiates per (and initializes with each) data element to display a list of those views/data items in the ListView. */
+                weatherDataList);
+
+        View rootView = inflater.inflate(R.layout.fragment_main, container, false);
+
+        ListView listView = (ListView) rootView.findViewById(R.id.weather_forecast_list_view);
+        listView.setAdapter(weatherDataAdapter);
+
+        return rootView;
+    }
+
+    @Override
+    public void onViewCreated(View view, Bundle savedInstanceState)
+    {
+        super.onViewCreated(view, savedInstanceState);
+
+    }
+
+    private URL getURL(String cityCode) {
+        /*
+            URL format is
+
+            http://api.openweathermap.org/data/2.5/forecast/daily?q=<postal code>&mode=<response format>&units=<temp unit>&cnt=<num of day>&APPID=<insert your app key>
+
+            http://api.openweathermap.org/data/2.5/forecast/daily?q=M6R2H6&mode=json&units=metric&cnt=7&APPID=<api key>
+         */
+
+        final String baseUrl = BuildConfig.OPEN_WEATHER_MAP_URL;
+
+        final String cityPathParameterKey = "q";
+        final String cityPathParameterValue = cityCode;
+
+        final String responseFormatPathParameterKey = "mode";
+        final String responseFormatPathParameterValue = "json";
+
+        final String temperatureUnitsPathParameterKey = "units";
+        final String temperatureUnitsPathParameterValue = "metric";
+
+        final String numberOfDaysPathParameterKey = "cnt";
+        final int numberOfDaysPathParameterValue = 7;
+
+        final String apiPathParameterKey = "APPID";
+        final String apiPathParameterValue = BuildConfig.OPEN_WEATHER_MAP_API_KEY;
+
+        Uri uri = Uri.parse(baseUrl).buildUpon()
+                .appendQueryParameter(cityPathParameterKey, cityPathParameterValue)
+                .appendQueryParameter(responseFormatPathParameterKey, responseFormatPathParameterValue)
+                .appendQueryParameter(temperatureUnitsPathParameterKey, temperatureUnitsPathParameterValue)
+                .appendQueryParameter(numberOfDaysPathParameterKey, Integer.toString(numberOfDaysPathParameterValue))
+                .appendQueryParameter(apiPathParameterKey, apiPathParameterValue)
+                .build();
+
+        URL url = null;
+
+        try {
+            //Construct the url to access openweathermap api
+            url = new URL(uri.toString());
+        } catch(MalformedURLException e) {
+            Log.e(TAG, "Error occurred", e);
+            System.exit(0);
+        }
+
+        return url;
+    }
+
+    private String getWeatherData(URL url) {
+        HttpURLConnection urlConnection = null;
+        BufferedReader bufferedReader = null;
+
+        StringBuffer responseBuffer = new StringBuffer();
+
+        try {
+            //Make a request by connecting to the openweathermap api
+            urlConnection = (HttpURLConnection) url.openConnection();
+            urlConnection.setRequestMethod("GET");
+            urlConnection.connect();
+
+            //Read the response
+            InputStream inputStream = urlConnection.getInputStream();
+
+            if(inputStream == null) {
+                return null;
+            }
+
+            bufferedReader = new BufferedReader(new InputStreamReader(inputStream));
+
+            String line = null;
+
+            while ((line = bufferedReader.readLine()) != null) {
+                /*
+                    adding a new line clearly formats json string, which is helpful when printed to the console
+                 */
+                responseBuffer.append(line + "\n");
+            }
+        }catch (IOException e) {
+            Log.e(TAG, "Error occurred", e);
+        } finally {
+            if(urlConnection != null) {
+                urlConnection.disconnect();
+            }
+
+            if(bufferedReader != null) {
+                try {
+                    bufferedReader.close();
+                }catch(IOException e) {
+                    Log.e(TAG, "Error occurred while closing stream", e);
+                }
+            }
+        }
+
+        return (responseBuffer.length() == 0 ? null : responseBuffer.toString());
+    }
+
+    private class GetWeatherDataTask extends AsyncTask<Void, Void, Void> {   <----------
+        private final String TAG = GetWeatherDataTask.class.getSimpleName();
+
+        @Override
+        protected Void doInBackground(Void... params) {
+            String weatherDataFromOpenWeatherApi = getWeatherData(getURL("M6R2H6"));
+            Log.d(TAG, weatherDataFromOpenWeatherApi);
+            return null;
+        }
+    }
+}
 ```
+
+Add a button to the fragment's layout *res/layout/fragment_main.xml* to fire-up the AsyncTask and fetch the weather data.
+
+Change the fragment's layout from a FrameLayout to a LinearLayout and add a button view
+
+```xml
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical"
+    >
+    <ListView
+        android:id="@+id/weather_forecast_list_view"
+        android:paddingLeft="@dimen/weather_forecast_list_view_left_margin"
+        android:paddingRight="@dimen/weather_forecast_list_view_left_margin"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:divider="@null"
+        />
+
+    <Button android:id="@+id/refresh_button"   <------ 
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="Refresh Weather Data"
+        android:onClick="onRefreshButtonClick"  <------ 
+        />
+</LinearLayout>
+```
+
+**Consequences of using android:onClick attribute for a button in the fragment's layout**
+
+The onClick event handler "onRefreshButtonClick" as specified above CAN only be defined in the activity class that hosts the fragments view hierarchy but not in the fragment class itself. 
+
+The idea is to create an instance of "GetWeatherDataTask" in onRefreshButtonClick() handler and call execute() method on it to fire up the AsyncTask that would asynchronously fetch the weather data,
+but since I defined GetWeatherDataTask class is defined as an inner private class of the fragment class, it cannot be accessed from the activity class.
+
+There are few options here:
+
+a) Avoid using *android:onClick* attribute; instead get a reference to the button and assign it a click handler within the fragment class itself.
+
+b) Define GetWeatherDataTask class as a static innner class; this requires the methods "getWeatherData()" and "getURL()" methods to be static. (What are the consequence of this?)
+
+c) Define GetWeatherDataTask class as a public inner class, in which case to create an instance of it, an instance of the enclosing fragment class is also needed. 
+This requires getting the instance of the fragment class from the activity class. (That's how far I got in my thoughts. I still need to think about the rest of the details!)
+
+I chose to go with a), which means I do not need *android:onClick* attribute, and I can leave the inner "GetWeatherDataTask" class private.
+
+*res/layout/fragment_main.xml*
+
+```xml
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical"
+    >
+    <ListView
+        android:id="@+id/weather_forecast_list_view"
+        android:paddingLeft="@dimen/weather_forecast_list_view_left_margin"
+        android:paddingRight="@dimen/weather_forecast_list_view_left_margin"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:divider="@null"
+        />
+
+    <Button android:id="@+id/refresh_button"   <------ 
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="Refresh Weather Data"
+        />
+</LinearLayout>
+```
+
+Getting a reference to the button and adding an onClick handler
+
+```java
+public class MainFragment extends Fragment {
+    private static final String TAG = MainFragment.class.getSimpleName();
+
+    ArrayAdapter<String> weatherDataAdapter;
+
+    @Nullable
+    @Override
+    public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
+        String[] weatherData = {
+                "Monday",
+                "Tuesday",
+                "Wednesday",
+                "Thursday",
+                "Friday",
+                "Saturday",
+                "Sunday"
+        };
+
+        List<String> weatherDataList = new ArrayList<>(Arrays.asList(weatherData));
+
+        weatherDataAdapter = new ArrayAdapter<>(
+                this.getActivity(),
+                R.layout.day_weather_forecast_list_item_layout, /* Point to the resource ID of the layout that contains the view for each item in the list */
+                R.id.day_weather_forecast_list_item_text_view, /* Point to the resource ID of the View in the above specified layout, that the adapter
+                 instantiates per (and initializes with each) data element to display a list of those views/data items in the ListView. */
+                weatherDataList);
+
+        View rootView = inflater.inflate(R.layout.fragment_main, container, false);
+
+        ListView listView = (ListView) rootView.findViewById(R.id.weather_forecast_list_view);
+        listView.setAdapter(weatherDataAdapter);
+
+        Button refreshButton = (Button) rootView.findViewById(R.id.refresh_button);   <--------------------
+        refreshButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                new GetWeatherDataTask().execute();
+            }
+        });
+
+        return rootView;
+    }
+
+    @Override
+    public void onViewCreated(View view, Bundle savedInstanceState)
+    {
+        super.onViewCreated(view, savedInstanceState);
+
+    }
+
+    private URL getURL(String cityCode) {
+        /*
+            URL format is
+
+            http://api.openweathermap.org/data/2.5/forecast/daily?q=<postal code>&mode=<response format>&units=<temp unit>&cnt=<num of day>&APPID=<insert your app key>
+
+            http://api.openweathermap.org/data/2.5/forecast/daily?q=M6R2H6&mode=json&units=metric&cnt=7&APPID=<api key>
+         */
+
+        final String baseUrl = BuildConfig.OPEN_WEATHER_MAP_URL;
+
+        final String cityPathParameterKey = "q";
+        final String cityPathParameterValue = cityCode;
+
+        final String responseFormatPathParameterKey = "mode";
+        final String responseFormatPathParameterValue = "json";
+
+        final String temperatureUnitsPathParameterKey = "units";
+        final String temperatureUnitsPathParameterValue = "metric";
+
+        final String numberOfDaysPathParameterKey = "cnt";
+        final int numberOfDaysPathParameterValue = 7;
+
+        final String apiPathParameterKey = "APPID";
+        final String apiPathParameterValue = BuildConfig.OPEN_WEATHER_MAP_API_KEY;
+
+        Uri uri = Uri.parse(baseUrl).buildUpon()
+                .appendQueryParameter(cityPathParameterKey, cityPathParameterValue)
+                .appendQueryParameter(responseFormatPathParameterKey, responseFormatPathParameterValue)
+                .appendQueryParameter(temperatureUnitsPathParameterKey, temperatureUnitsPathParameterValue)
+                .appendQueryParameter(numberOfDaysPathParameterKey, Integer.toString(numberOfDaysPathParameterValue))
+                .appendQueryParameter(apiPathParameterKey, apiPathParameterValue)
+                .build();
+
+        URL url = null;
+
+        try {
+            //Construct the url to access openweathermap api
+            url = new URL(uri.toString());
+        } catch(MalformedURLException e) {
+            Log.e(TAG, "Error occurred", e);
+            System.exit(0);
+        }
+
+        return url;
+    }
+
+    private String getWeatherData(URL url) {
+        HttpURLConnection urlConnection = null;
+        BufferedReader bufferedReader = null;
+
+        StringBuffer responseBuffer = new StringBuffer();
+
+        try {
+            //Make a request by connecting to the openweathermap api
+            urlConnection = (HttpURLConnection) url.openConnection();
+            urlConnection.setRequestMethod("GET");
+            urlConnection.connect();
+
+            //Read the response
+            InputStream inputStream = urlConnection.getInputStream();
+
+            if(inputStream == null) {
+                return null;
+            }
+
+            bufferedReader = new BufferedReader(new InputStreamReader(inputStream));
+
+            String line = null;
+
+            while ((line = bufferedReader.readLine()) != null) {
+                /*
+                    adding a new line clearly formats json string, which is helpful when printed to the console
+                 */
+                responseBuffer.append(line + "\n");
+            }
+        }catch (IOException e) {
+            Log.e(TAG, "Error occurred", e);
+        } finally {
+            if(urlConnection != null) {
+                urlConnection.disconnect();
+            }
+
+            if(bufferedReader != null) {
+                try {
+                    bufferedReader.close();
+                }catch(IOException e) {
+                    Log.e(TAG, "Error occurred while closing stream", e);
+                }
+            }
+        }
+
+        return (responseBuffer.length() == 0 ? null : responseBuffer.toString());
+    }
+
+    private class GetWeatherDataTask extends AsyncTask<Void, Void, Void> {
+        private final String TAG = GetWeatherDataTask.class.getSimpleName();
+
+        @Override
+        protected Void doInBackground(Void... params) {
+            String weatherDataFromOpenWeatherApi = getWeatherData(getURL("M6R2H6"));
+            Log.d(TAG, weatherDataFromOpenWeatherApi);
+            return null;
+        }
+    }
+}
+```
+
+Running the app
+
+**Snapshot**
+
+Running the app resulted in the following because the app is not given the permission to access the internet. 
 
 ```
 03-28 12:09:13.046 8847-8988/com.gruprog.weatherapp E/AndroidRuntime: FATAL EXCEPTION: AsyncTask #1
@@ -877,3 +1264,34 @@ As network calls cannot be made on the main thread, refactor the network code to
 03-28 12:09:13.046 8847-8988/com.gruprog.weatherapp E/AndroidRuntime:     at java.lang.Thread.run(Thread.java:818) 
 03-28 12:09:13.397 8847-8870/com.gruprog.weatherapp E/Surface: getSlotFromBufferLocked: unknown buffer: 0xb4093a40
 ```
+
+Add *android.permission.INTERNET* persmission to AndroidManifest.xml
+
+```xml
+<?xml version="1.0" encoding="utf-8"?>
+<manifest xmlns:android="http://schemas.android.com/apk/res/android"
+    package="com.gruprog.weatherapp" >
+
+    <uses-permission android:name="android.permission.INTERNET"/>   <--------------------
+
+    <application
+        android:allowBackup="true"
+        android:icon="@mipmap/ic_launcher"
+        android:label="@string/app_name"
+        android:supportsRtl="true"
+        android:theme="@style/AppTheme" >
+        <activity
+            android:name=".MainActivity"
+            android:label="@string/app_name"
+            android:theme="@style/AppTheme.NoActionBar" >
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN" />
+
+                <category android:name="android.intent.category.LAUNCHER" />
+            </intent-filter>
+        </activity>
+    </application>
+
+</manifest>
+```
+
