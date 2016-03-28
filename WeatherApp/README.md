@@ -757,10 +757,6 @@ public class MainFragment extends Fragment {
                  */
                 responseBuffer.append(line + "\n");
             }
-
-            if(responseBuffer != null) {
-                Log.d(TAG, responseBuffer.toString());
-            }
         }catch (IOException e) {
             Log.e(TAG, "Error occurred", e);
         } finally {
@@ -782,3 +778,102 @@ public class MainFragment extends Fragment {
 }
 ```
 
+**Refactoring the network calling code to be called from an AsyncTask**
+
+As network calls cannot be made on the main thread, refactor the network code to be called from an AsyncTask.
+
+
+```java
+
+```
+
+```
+03-28 12:09:13.046 8847-8988/com.gruprog.weatherapp E/AndroidRuntime: FATAL EXCEPTION: AsyncTask #1
+03-28 12:09:13.046 8847-8988/com.gruprog.weatherapp E/AndroidRuntime: Process: com.gruprog.weatherapp, PID: 8847
+03-28 12:09:13.046 8847-8988/com.gruprog.weatherapp E/AndroidRuntime: java.lang.RuntimeException: An error occurred while executing doInBackground()
+03-28 12:09:13.046 8847-8988/com.gruprog.weatherapp E/AndroidRuntime:     at android.os.AsyncTask$3.done(AsyncTask.java:309)
+03-28 12:09:13.046 8847-8988/com.gruprog.weatherapp E/AndroidRuntime:     at java.util.concurrent.FutureTask.finishCompletion(FutureTask.java:354)
+03-28 12:09:13.046 8847-8988/com.gruprog.weatherapp E/AndroidRuntime:     at java.util.concurrent.FutureTask.setException(FutureTask.java:223)
+03-28 12:09:13.046 8847-8988/com.gruprog.weatherapp E/AndroidRuntime:     at java.util.concurrent.FutureTask.run(FutureTask.java:242)
+03-28 12:09:13.046 8847-8988/com.gruprog.weatherapp E/AndroidRuntime:     at android.os.AsyncTask$SerialExecutor$1.run(AsyncTask.java:234)
+03-28 12:09:13.046 8847-8988/com.gruprog.weatherapp E/AndroidRuntime:     at java.util.concurrent.ThreadPoolExecutor.runWorker(ThreadPoolExecutor.java:1113)
+03-28 12:09:13.046 8847-8988/com.gruprog.weatherapp E/AndroidRuntime:     at java.util.concurrent.ThreadPoolExecutor$Worker.run(ThreadPoolExecutor.java:588)
+03-28 12:09:13.046 8847-8988/com.gruprog.weatherapp E/AndroidRuntime:     at java.lang.Thread.run(Thread.java:818)
+03-28 12:09:13.046 8847-8988/com.gruprog.weatherapp E/AndroidRuntime:  Caused by: java.lang.SecurityException: Permission denied (missing INTERNET permission?)  <--------------------
+03-28 12:09:13.046 8847-8988/com.gruprog.weatherapp E/AndroidRuntime:     at java.net.InetAddress.lookupHostByName(InetAddress.java:464)
+03-28 12:09:13.046 8847-8988/com.gruprog.weatherapp E/AndroidRuntime:     at java.net.InetAddress.getAllByNameImpl(InetAddress.java:252)
+03-28 12:09:13.046 8847-8988/com.gruprog.weatherapp E/AndroidRuntime:     at java.net.InetAddress.getAllByName(InetAddress.java:215)
+03-28 12:09:13.046 8847-8988/com.gruprog.weatherapp E/AndroidRuntime:     at com.android.okhttp.internal.Network$1.resolveInetAddresses(Network.java:29)
+03-28 12:09:13.046 8847-8988/com.gruprog.weatherapp E/AndroidRuntime:     at com.android.okhttp.internal.http.RouteSelector.resetNextInetSocketAddress(RouteSelector.java:188)
+03-28 12:09:13.046 8847-8988/com.gruprog.weatherapp E/AndroidRuntime:     at com.android.okhttp.internal.http.RouteSelector.nextProxy(RouteSelector.java:157)
+03-28 12:09:13.046 8847-8988/com.gruprog.weatherapp E/AndroidRuntime:     at com.android.okhttp.internal.http.RouteSelector.next(RouteSelector.java:100)
+03-28 12:09:13.046 8847-8988/com.gruprog.weatherapp E/AndroidRuntime:     at com.android.okhttp.internal.http.HttpEngine.createNextConnection(HttpEngine.java:357)
+03-28 12:09:13.046 8847-8988/com.gruprog.weatherapp E/AndroidRuntime:     at com.android.okhttp.internal.http.HttpEngine.nextConnection(HttpEngine.java:340)
+03-28 12:09:13.046 8847-8988/com.gruprog.weatherapp E/AndroidRuntime:     at com.android.okhttp.internal.http.HttpEngine.connect(HttpEngine.java:330)
+03-28 12:09:13.046 8847-8988/com.gruprog.weatherapp E/AndroidRuntime:     at com.android.okhttp.internal.http.HttpEngine.sendRequest(HttpEngine.java:248)
+03-28 12:09:13.046 8847-8988/com.gruprog.weatherapp E/AndroidRuntime:     at com.android.okhttp.internal.huc.HttpURLConnectionImpl.execute(HttpURLConnectionImpl.java:433)
+03-28 12:09:13.046 8847-8988/com.gruprog.weatherapp E/AndroidRuntime:     at com.android.okhttp.internal.huc.HttpURLConnectionImpl.connect(HttpURLConnectionImpl.java:114)
+03-28 12:09:13.046 8847-8988/com.gruprog.weatherapp E/AndroidRuntime:     at com.gruprog.weatherapp.MainFragment.getWeatherData(MainFragment.java:134)
+03-28 12:09:13.046 8847-8988/com.gruprog.weatherapp E/AndroidRuntime:     at com.gruprog.weatherapp.MainFragment.access$100(MainFragment.java:27)
+03-28 12:09:13.046 8847-8988/com.gruprog.weatherapp E/AndroidRuntime:     at com.gruprog.weatherapp.MainFragment$GetWeatherDataTask.doInBackground(MainFragment.java:177)
+03-28 12:09:13.046 8847-8988/com.gruprog.weatherapp E/AndroidRuntime:     at com.gruprog.weatherapp.MainFragment$GetWeatherDataTask.doInBackground(MainFragment.java:172)
+03-28 12:09:13.046 8847-8988/com.gruprog.weatherapp E/AndroidRuntime:     at android.os.AsyncTask$2.call(AsyncTask.java:295)
+03-28 12:09:13.046 8847-8988/com.gruprog.weatherapp E/AndroidRuntime:     at java.util.concurrent.FutureTask.run(FutureTask.java:237)
+03-28 12:09:13.046 8847-8988/com.gruprog.weatherapp E/AndroidRuntime:     at android.os.AsyncTask$SerialExecutor$1.run(AsyncTask.java:234) 
+03-28 12:09:13.046 8847-8988/com.gruprog.weatherapp E/AndroidRuntime:     at java.util.concurrent.ThreadPoolExecutor.runWorker(ThreadPoolExecutor.java:1113) 
+03-28 12:09:13.046 8847-8988/com.gruprog.weatherapp E/AndroidRuntime:     at java.util.concurrent.ThreadPoolExecutor$Worker.run(ThreadPoolExecutor.java:588) 
+03-28 12:09:13.046 8847-8988/com.gruprog.weatherapp E/AndroidRuntime:     at java.lang.Thread.run(Thread.java:818) 
+03-28 12:09:13.046 8847-8988/com.gruprog.weatherapp E/AndroidRuntime:  Caused by: android.system.GaiException: android_getaddrinfo failed: EAI_NODATA (No address associated with hostname)
+03-28 12:09:13.046 8847-8988/com.gruprog.weatherapp E/AndroidRuntime:     at libcore.io.Posix.android_getaddrinfo(Native Method)
+03-28 12:09:13.046 8847-8988/com.gruprog.weatherapp E/AndroidRuntime:     at libcore.io.ForwardingOs.android_getaddrinfo(ForwardingOs.java:55)
+03-28 12:09:13.046 8847-8988/com.gruprog.weatherapp E/AndroidRuntime:     at java.net.InetAddress.lookupHostByName(InetAddress.java:451)
+03-28 12:09:13.046 8847-8988/com.gruprog.weatherapp E/AndroidRuntime:     at java.net.InetAddress.getAllByNameImpl(InetAddress.java:252) 
+03-28 12:09:13.046 8847-8988/com.gruprog.weatherapp E/AndroidRuntime:     at java.net.InetAddress.getAllByName(InetAddress.java:215) 
+03-28 12:09:13.046 8847-8988/com.gruprog.weatherapp E/AndroidRuntime:     at com.android.okhttp.internal.Network$1.resolveInetAddresses(Network.java:29) 
+03-28 12:09:13.046 8847-8988/com.gruprog.weatherapp E/AndroidRuntime:     at com.android.okhttp.internal.http.RouteSelector.resetNextInetSocketAddress(RouteSelector.java:188) 
+03-28 12:09:13.046 8847-8988/com.gruprog.weatherapp E/AndroidRuntime:     at com.android.okhttp.internal.http.RouteSelector.nextProxy(RouteSelector.java:157) 
+03-28 12:09:13.046 8847-8988/com.gruprog.weatherapp E/AndroidRuntime:     at com.android.okhttp.internal.http.RouteSelector.next(RouteSelector.java:100) 
+03-28 12:09:13.046 8847-8988/com.gruprog.weatherapp E/AndroidRuntime:     at com.android.okhttp.internal.http.HttpEngine.createNextConnection(HttpEngine.java:357) 
+03-28 12:09:13.046 8847-8988/com.gruprog.weatherapp E/AndroidRuntime:     at com.android.okhttp.internal.http.HttpEngine.nextConnection(HttpEngine.java:340) 
+03-28 12:09:13.046 8847-8988/com.gruprog.weatherapp E/AndroidRuntime:     at com.android.okhttp.internal.http.HttpEngine.connect(HttpEngine.java:330) 
+03-28 12:09:13.046 8847-8988/com.gruprog.weatherapp E/AndroidRuntime:     at com.android.okhttp.internal.http.HttpEngine.sendRequest(HttpEngine.java:248) 
+03-28 12:09:13.046 8847-8988/com.gruprog.weatherapp E/AndroidRuntime:     at com.android.okhttp.internal.huc.HttpURLConnectionImpl.execute(HttpURLConnectionImpl.java:433) 
+03-28 12:09:13.046 8847-8988/com.gruprog.weatherapp E/AndroidRuntime:     at com.android.okhttp.internal.huc.HttpURLConnectionImpl.connect(HttpURLConnectionImpl.java:114) 
+03-28 12:09:13.046 8847-8988/com.gruprog.weatherapp E/AndroidRuntime:     at com.gruprog.weatherapp.MainFragment.getWeatherData(MainFragment.java:134) 
+03-28 12:09:13.046 8847-8988/com.gruprog.weatherapp E/AndroidRuntime:     at com.gruprog.weatherapp.MainFragment.access$100(MainFragment.java:27) 
+03-28 12:09:13.046 8847-8988/com.gruprog.weatherapp E/AndroidRuntime:     at com.gruprog.weatherapp.MainFragment$GetWeatherDataTask.doInBackground(MainFragment.java:177) 
+03-28 12:09:13.046 8847-8988/com.gruprog.weatherapp E/AndroidRuntime:     at com.gruprog.weatherapp.MainFragment$GetWeatherDataTask.doInBackground(MainFragment.java:172) 
+03-28 12:09:13.046 8847-8988/com.gruprog.weatherapp E/AndroidRuntime:     at android.os.AsyncTask$2.call(AsyncTask.java:295) 
+03-28 12:09:13.046 8847-8988/com.gruprog.weatherapp E/AndroidRuntime:     at java.util.concurrent.FutureTask.run(FutureTask.java:237) 
+03-28 12:09:13.046 8847-8988/com.gruprog.weatherapp E/AndroidRuntime:     at android.os.AsyncTask$SerialExecutor$1.run(AsyncTask.java:234) 
+03-28 12:09:13.046 8847-8988/com.gruprog.weatherapp E/AndroidRuntime:     at java.util.concurrent.ThreadPoolExecutor.runWorker(ThreadPoolExecutor.java:1113) 
+03-28 12:09:13.046 8847-8988/com.gruprog.weatherapp E/AndroidRuntime:     at java.util.concurrent.ThreadPoolExecutor$Worker.run(ThreadPoolExecutor.java:588) 
+03-28 12:09:13.046 8847-8988/com.gruprog.weatherapp E/AndroidRuntime:     at java.lang.Thread.run(Thread.java:818) 
+03-28 12:09:13.046 8847-8988/com.gruprog.weatherapp E/AndroidRuntime:  Caused by: android.system.ErrnoException: android_getaddrinfo failed: EACCES (Permission denied)
+03-28 12:09:13.046 8847-8988/com.gruprog.weatherapp E/AndroidRuntime:     at libcore.io.Posix.android_getaddrinfo(Native Method) 
+03-28 12:09:13.046 8847-8988/com.gruprog.weatherapp E/AndroidRuntime:     at libcore.io.ForwardingOs.android_getaddrinfo(ForwardingOs.java:55) 
+03-28 12:09:13.046 8847-8988/com.gruprog.weatherapp E/AndroidRuntime:     at java.net.InetAddress.lookupHostByName(InetAddress.java:451) 
+03-28 12:09:13.046 8847-8988/com.gruprog.weatherapp E/AndroidRuntime:     at java.net.InetAddress.getAllByNameImpl(InetAddress.java:252) 
+03-28 12:09:13.046 8847-8988/com.gruprog.weatherapp E/AndroidRuntime:     at java.net.InetAddress.getAllByName(InetAddress.java:215) 
+03-28 12:09:13.046 8847-8988/com.gruprog.weatherapp E/AndroidRuntime:     at com.android.okhttp.internal.Network$1.resolveInetAddresses(Network.java:29) 
+03-28 12:09:13.046 8847-8988/com.gruprog.weatherapp E/AndroidRuntime:     at com.android.okhttp.internal.http.RouteSelector.resetNextInetSocketAddress(RouteSelector.java:188) 
+03-28 12:09:13.046 8847-8988/com.gruprog.weatherapp E/AndroidRuntime:     at com.android.okhttp.internal.http.RouteSelector.nextProxy(RouteSelector.java:157) 
+03-28 12:09:13.046 8847-8988/com.gruprog.weatherapp E/AndroidRuntime:     at com.android.okhttp.internal.http.RouteSelector.next(RouteSelector.java:100) 
+03-28 12:09:13.046 8847-8988/com.gruprog.weatherapp E/AndroidRuntime:     at com.android.okhttp.internal.http.HttpEngine.createNextConnection(HttpEngine.java:357) 
+03-28 12:09:13.046 8847-8988/com.gruprog.weatherapp E/AndroidRuntime:     at com.android.okhttp.internal.http.HttpEngine.nextConnection(HttpEngine.java:340) 
+03-28 12:09:13.046 8847-8988/com.gruprog.weatherapp E/AndroidRuntime:     at com.android.okhttp.internal.http.HttpEngine.connect(HttpEngine.java:330) 
+03-28 12:09:13.046 8847-8988/com.gruprog.weatherapp E/AndroidRuntime:     at com.android.okhttp.internal.http.HttpEngine.sendRequest(HttpEngine.java:248) 
+03-28 12:09:13.046 8847-8988/com.gruprog.weatherapp E/AndroidRuntime:     at com.android.okhttp.internal.huc.HttpURLConnectionImpl.execute(HttpURLConnectionImpl.java:433) 
+03-28 12:09:13.046 8847-8988/com.gruprog.weatherapp E/AndroidRuntime:     at com.android.okhttp.internal.huc.HttpURLConnectionImpl.connect(HttpURLConnectionImpl.java:114) 
+03-28 12:09:13.046 8847-8988/com.gruprog.weatherapp E/AndroidRuntime:     at com.gruprog.weatherapp.MainFragment.getWeatherData(MainFragment.java:134) 
+03-28 12:09:13.046 8847-8988/com.gruprog.weatherapp E/AndroidRuntime:     at com.gruprog.weatherapp.MainFragment.access$100(MainFragment.java:27) 
+03-28 12:09:13.046 8847-8988/com.gruprog.weatherapp E/AndroidRuntime:     at com.gruprog.weatherapp.MainFragment$GetWeatherDataTask.doInBackground(MainFragment.java:177) 
+03-28 12:09:13.046 8847-8988/com.gruprog.weatherapp E/AndroidRuntime:     at com.gruprog.weatherapp.MainFragment$GetWeatherDataTask.doInBackground(MainFragment.java:172) 
+03-28 12:09:13.046 8847-8988/com.gruprog.weatherapp E/AndroidRuntime:     at android.os.AsyncTask$2.call(AsyncTask.java:295) 
+03-28 12:09:13.046 8847-8988/com.gruprog.weatherapp E/AndroidRuntime:     at java.util.concurrent.FutureTask.run(FutureTask.java:237) 
+03-28 12:09:13.046 8847-8988/com.gruprog.weatherapp E/AndroidRuntime:     at android.os.AsyncTask$SerialExecutor$1.run(AsyncTask.java:234) 
+03-28 12:09:13.046 8847-8988/com.gruprog.weatherapp E/AndroidRuntime:     at java.util.concurrent.ThreadPoolExecutor.runWorker(ThreadPoolExecutor.java:1113) 
+03-28 12:09:13.046 8847-8988/com.gruprog.weatherapp E/AndroidRuntime:     at java.util.concurrent.ThreadPoolExecutor$Worker.run(ThreadPoolExecutor.java:588) 
+03-28 12:09:13.046 8847-8988/com.gruprog.weatherapp E/AndroidRuntime:     at java.lang.Thread.run(Thread.java:818) 
+03-28 12:09:13.397 8847-8870/com.gruprog.weatherapp E/Surface: getSlotFromBufferLocked: unknown buffer: 0xb4093a40
+```
