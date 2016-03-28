@@ -676,28 +676,65 @@ public class MainFragment extends Fragment {
         ListView listView = (ListView) rootView.findViewById(R.id.weather_forecast_list_view);
         listView.setAdapter(weatherDataAdapter);
 
-        String weatherDataFromOpenWeatherApi = getWeatherData(); 
+        String weatherDataFromOpenWeatherApi = getWeatherData(getURL("M6R2H6"));
 
         return rootView;
     }
 
-    private String getWeatherData() {
+    private URL getURL(String cityCode) { 
+        /*
+            URL format is
+
+            http://api.openweathermap.org/data/2.5/forecast/daily?q=<postal code>&mode=<response format>&units=<temp unit>&cnt=<num of day>&APPID=<insert your app key>
+
+            http://api.openweathermap.org/data/2.5/forecast/daily?q=M6R2H6&mode=json&units=metric&cnt=7&APPID=<api key>
+         */
+
+        final String baseUrl = BuildConfig.OPEN_WEATHER_MAP_URL;
+        final String apiKey = "&APPID=" + BuildConfig.OPEN_WEATHER_MAP_API_KEY;
+        final String cityPathParameterKey = "q";
+        final String cityPathParameterValue = cityCode;
+
+        final String responseFormatPathParameterKey = "mode";
+        final String responseFormatPathParameterValue = "json";
+
+        final String temperatureUnitsPathParameterKey = "units";
+        final String temperatureUnitsPathParameterValue = "metric";
+
+        final String numberOfDaysPathParameterKey = "cnt";
+        final int numberOfDaysPathParameterValue = 7;
+
+        Uri uri = Uri.parse(baseUrl).buildUpon()
+                .appendQueryParameter(cityPathParameterKey, cityPathParameterValue)
+                .appendQueryParameter(responseFormatPathParameterKey, responseFormatPathParameterValue)
+                .appendQueryParameter(temperatureUnitsPathParameterKey, temperatureUnitsPathParameterValue)
+                .appendQueryParameter(numberOfDaysPathParameterKey, Integer.toString(numberOfDaysPathParameterValue))
+                .build();
+
+        URL url = null;
+
+        try {
+            //Construct the url to access openweathermap api
+            url = new URL(uri.toString());
+        } catch(MalformedURLException e) {
+            Log.e(TAG, "Error occurred", e);
+            System.exit(0);
+        }
+
+        return url;
+    }
+
+    private String getWeatherData(URL url) {  
         HttpURLConnection urlConnection = null;
         BufferedReader bufferedReader = null;
 
         StringBuffer responseBuffer = new StringBuffer();
 
         try {
-            String baseUrl = "http://api.openweathermap.org/data/2.5/forecast/daily?q=94043&mode=json&units=metric&cnt=7";
-            String apiKey = "&APPID=" + BuildConfig.OPEN_WEATHER_MAP_API_KEY; 
-
-            //Construct the url to access openweathermap api
-            URL url = new URL(baseUrl.concat(apiKey));
-
             //Make a request by connecting to the openweathermap api
             urlConnection = (HttpURLConnection) url.openConnection();
             urlConnection.setRequestMethod("GET");
-            urlConnection.connect();   <------------------------
+            urlConnection.connect();  <------------------------------------
 
             //Read the response
             InputStream inputStream = urlConnection.getInputStream();
