@@ -489,7 +489,7 @@ public class MainFragment extends Fragment {
          */
 
         final String baseUrl = BuildConfig.OPEN_WEATHER_MAP_URL;
-        final String apiKey = "&APPID=" + BuildConfig.OPEN_WEATHER_MAP_API_KEY;
+
         final String cityPathParameterKey = "q";
         final String cityPathParameterValue = cityCode;
 
@@ -502,11 +502,15 @@ public class MainFragment extends Fragment {
         final String numberOfDaysPathParameterKey = "cnt";
         final int numberOfDaysPathParameterValue = 7;
 
+        final String apiPathParameterKey = "APPID";
+        final String apiPathParameterValue = BuildConfig.OPEN_WEATHER_MAP_API_KEY;
+
         Uri uri = Uri.parse(baseUrl).buildUpon()
                 .appendQueryParameter(cityPathParameterKey, cityPathParameterValue)
                 .appendQueryParameter(responseFormatPathParameterKey, responseFormatPathParameterValue)
                 .appendQueryParameter(temperatureUnitsPathParameterKey, temperatureUnitsPathParameterValue)
                 .appendQueryParameter(numberOfDaysPathParameterKey, Integer.toString(numberOfDaysPathParameterValue))
+                .appendQueryParameter(apiPathParameterKey, apiPathParameterValue)
                 .build();
 
         URL url = null;
@@ -550,10 +554,6 @@ public class MainFragment extends Fragment {
                     adding a new line clearly formats json string, which is helpful when printed to the console
                  */
                 responseBuffer.append(line + "\n");
-            }
-
-            if(responseBuffer != null) {
-                Log.d(TAG, responseBuffer.toString());
             }
         }catch (IOException e) {
             Log.e(TAG, "Error occurred", e);
@@ -645,7 +645,7 @@ It could be inferred that *android.os.NetworkOnMainThreadException* was caused b
 
 ```java
 public class MainFragment extends Fragment {
-    private static final String TAG = MainFragment.class.getName();
+    private static final String TAG = MainFragment.class.getSimpleName();
 
     ArrayAdapter<String> weatherDataAdapter;
 
@@ -691,7 +691,7 @@ public class MainFragment extends Fragment {
          */
 
         final String baseUrl = BuildConfig.OPEN_WEATHER_MAP_URL;
-        final String apiKey = "&APPID=" + BuildConfig.OPEN_WEATHER_MAP_API_KEY;
+
         final String cityPathParameterKey = "q";
         final String cityPathParameterValue = cityCode;
 
@@ -704,11 +704,15 @@ public class MainFragment extends Fragment {
         final String numberOfDaysPathParameterKey = "cnt";
         final int numberOfDaysPathParameterValue = 7;
 
+        final String apiPathParameterKey = "APPID";
+        final String apiPathParameterValue = BuildConfig.OPEN_WEATHER_MAP_API_KEY;
+
         Uri uri = Uri.parse(baseUrl).buildUpon()
                 .appendQueryParameter(cityPathParameterKey, cityPathParameterValue)
                 .appendQueryParameter(responseFormatPathParameterKey, responseFormatPathParameterValue)
                 .appendQueryParameter(temperatureUnitsPathParameterKey, temperatureUnitsPathParameterValue)
                 .appendQueryParameter(numberOfDaysPathParameterKey, Integer.toString(numberOfDaysPathParameterValue))
+                .appendQueryParameter(apiPathParameterKey, apiPathParameterValue)
                 .build();
 
         URL url = null;
@@ -777,3 +781,4 @@ public class MainFragment extends Fragment {
     }
 }
 ```
+
