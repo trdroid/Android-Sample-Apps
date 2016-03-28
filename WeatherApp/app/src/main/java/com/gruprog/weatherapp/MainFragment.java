@@ -10,6 +10,7 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ArrayAdapter;
+import android.widget.Button;
 import android.widget.ListView;
 
 import java.io.BufferedReader;
@@ -55,7 +56,22 @@ public class MainFragment extends Fragment {
         ListView listView = (ListView) rootView.findViewById(R.id.weather_forecast_list_view);
         listView.setAdapter(weatherDataAdapter);
 
+        Button refreshButton = (Button) rootView.findViewById(R.id.refresh_button);
+        refreshButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                new GetWeatherDataTask().execute();
+            }
+        });
+
         return rootView;
+    }
+
+    @Override
+    public void onViewCreated(View view, Bundle savedInstanceState)
+    {
+        super.onViewCreated(view, savedInstanceState);
+
     }
 
     private URL getURL(String cityCode) {
@@ -156,10 +172,10 @@ public class MainFragment extends Fragment {
     private class GetWeatherDataTask extends AsyncTask<Void, Void, Void> {
         private final String TAG = GetWeatherDataTask.class.getSimpleName();
 
-
         @Override
         protected Void doInBackground(Void... params) {
             String weatherDataFromOpenWeatherApi = getWeatherData(getURL("M6R2H6"));
+            Log.d(TAG, weatherDataFromOpenWeatherApi);
             return null;
         }
     }
