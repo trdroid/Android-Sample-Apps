@@ -596,7 +596,7 @@ After adding the above code, running the app results in the following error:
 03-28 07:14:43.126 2140-2140/com.gruprog.weatherapp E/AndroidRuntime:     at java.lang.reflect.Method.invoke(Native Method)
 03-28 07:14:43.126 2140-2140/com.gruprog.weatherapp E/AndroidRuntime:     at com.android.internal.os.ZygoteInit$MethodAndArgsCaller.run(ZygoteInit.java:726)
 03-28 07:14:43.126 2140-2140/com.gruprog.weatherapp E/AndroidRuntime:     at com.android.internal.os.ZygoteInit.main(ZygoteInit.java:616)
-03-28 07:14:43.126 2140-2140/com.gruprog.weatherapp E/AndroidRuntime:  Caused by: android.os.NetworkOnMainThreadException
+03-28 07:14:43.126 2140-2140/com.gruprog.weatherapp E/AndroidRuntime:  Caused by: android.os.NetworkOnMainThreadException  <---------
 03-28 07:14:43.126 2140-2140/com.gruprog.weatherapp E/AndroidRuntime:     at android.os.StrictMode$AndroidBlockGuardPolicy.onNetwork(StrictMode.java:1273)
 03-28 07:14:43.126 2140-2140/com.gruprog.weatherapp E/AndroidRuntime:     at java.net.InetAddress.lookupHostByName(InetAddress.java:431)
 03-28 07:14:43.126 2140-2140/com.gruprog.weatherapp E/AndroidRuntime:     at java.net.InetAddress.getAllByNameImpl(InetAddress.java:252)
@@ -611,7 +611,7 @@ After adding the above code, running the app results in the following error:
 03-28 07:14:43.126 2140-2140/com.gruprog.weatherapp E/AndroidRuntime:     at com.android.okhttp.internal.http.HttpEngine.sendRequest(HttpEngine.java:248)
 03-28 07:14:43.126 2140-2140/com.gruprog.weatherapp E/AndroidRuntime:     at com.android.okhttp.internal.huc.HttpURLConnectionImpl.execute(HttpURLConnectionImpl.java:433)
 03-28 07:14:43.126 2140-2140/com.gruprog.weatherapp E/AndroidRuntime:     at com.android.okhttp.internal.huc.HttpURLConnectionImpl.connect(HttpURLConnectionImpl.java:114)
-03-28 07:14:43.126 2140-2140/com.gruprog.weatherapp E/AndroidRuntime:     at com.gruprog.weatherapp.MainFragment.getWeatherData(MainFragment.java:108)
+03-28 07:14:43.126 2140-2140/com.gruprog.weatherapp E/AndroidRuntime:     at com.gruprog.weatherapp.MainFragment.getWeatherData(MainFragment.java:108) <---------
 03-28 07:14:43.126 2140-2140/com.gruprog.weatherapp E/AndroidRuntime:     at com.gruprog.weatherapp.MainFragment.onCreateView(MainFragment.java:57)
 03-28 07:14:43.126 2140-2140/com.gruprog.weatherapp E/AndroidRuntime:     at android.support.v4.app.Fragment.performCreateView(Fragment.java:1962)
 03-28 07:14:43.126 2140-2140/com.gruprog.weatherapp E/AndroidRuntime:     at android.support.v4.app.FragmentManagerImpl.moveToState(FragmentManager.java:1067)
