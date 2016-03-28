@@ -2,6 +2,19 @@
 
 **Changing the icon**
 
+![](_misc/asset_studio.png)
+
+An attempt to change the icon reveals the location of the default launcher
+
+![](_misc/default_ic_launcher_location.png)
+
+Select the newly added weather icon
+
+![](_misc/select%20custom%20icon%20saved%20in%20the%20current%20project.png)
+
+After selecting the icon
+
+![](_misc/After%20selecting%20the%20icon.png)
 
 
 ## Running the project from the command line
@@ -247,6 +260,10 @@ Use the activity manager tool (am) to start the MainActivity.
 
 ## Running the project from the IDE
 
+Hit the run button and choose the physical device attached as shown below
+
+![](_misc/Choosing%20a%20physical%20phone%20to%20run%20the%20app%20on.png)
+
 -----------
 
 # Creating a list of weather forecasts with Mock Data
@@ -371,6 +388,10 @@ public class MainActivity extends AppCompatActivity {
     }
 ```
 
+**Snapshot**
+
+![](_misc/snapshot.png)
+
 -----------------
 
 # Getting Weather Data from http://openweathermap.org/
@@ -440,6 +461,9 @@ dependencies {
 The above snippet automatically generates a couple of fields in BuildConfig.java called OPEN_WEATHER_MAP_URL of type String with the URL supplied to it as its value and 
 OPEN_WEATHER_MAP_API_KEY of type String with the API key supplied to it as its value. These fields can then be referred to in code.
 
+A snapshot with OPEN_WEATHER_MAP_API_KEY generated is shown below
+
+![](_misc/New%20field%20added%20to%20BuildConfig%20files.png)
 
 ```java
 public class MainFragment extends Fragment {
@@ -1294,6 +1318,10 @@ Add *android.permission.INTERNET* persmission to AndroidManifest.xml
 
 </manifest>
 ```
+
+**Snapshot**
+
+![](_misc/Snapshot%20with%20button%20to%20refetch%20weather%20data.png)
 
 Hitting the "Refresh Weather Data" button fetches the data from the OpenWeather api and prints the following to the console 
 
