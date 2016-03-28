@@ -1327,3 +1327,171 @@ Hitting the "Refresh Weather Data" button now fetches the data from the OpenWeat
 03-28 18:25:09.177 10548-10609/com.gruprog.weatherapp D/GetWeatherDataTask: {"city":{"id":6160378,"name":"Swansea","coord":{"lon":-79.466301,"lat":43.633419},"country":"CA","population":0},"cod":"200","message":0.0089,"cnt":7,"list":[{"dt":1459184400,"temp":{"day":3.63,"min":-2.45,"max":3.63,"night":-2.45,"eve":1.21,"morn":3.63},"pressure":977.81,"humidity":99,"weather":[{"id":800,"main":"Clear","description":"clear sky","icon":"01d"}],"speed":12.91,"deg":332,"clouds":92,"rain":2.73,"snow":0.02},{"dt":1459270800,"temp":{"day":3.34,"min":-6.52,"max":4.74,"night":-6.52,"eve":0.94,"morn":-6.15},"pressure":1001.9,"humidity":44,"weather":[{"id":800,"main":"Clear","description":"clear sky","icon":"01d"}],"speed":6.96,"deg":337,"clouds":0},{"dt":1459357200,"temp":{"day":8.3,"min":-5.52,"max":8.74,"night":7.38,"eve":6.9,"morn":-5.52},"pressure":999.62,"humidity":57,"weather":[{"id":801,"main":"Clouds","description":"few clouds","icon":"02d"}],"speed":6.26,"deg":207,"clouds":12},{"dt":1459443600,"temp":{"day":10.92,"min":9.56,"max":12.12,"night":10.14,"eve":12.12,"morn":9.56},"pressure":978.69,"humidity":94,"weather":[{"id":502,"main":"Rain","description":"heavy intensity rain","icon":"10d"}],"speed":9.67,"deg":188,"clouds":92,"rain":29.81},{"dt":1459530000,"temp":{"day":8.51,"min":-0.58,"max":8.51,"night":-0.58,"eve":6.39,"morn":5.55},"pressure":988.98,"humidity":0,"weather":[{"id":600,"main":"Snow","description":"light snow","icon":"13d"}],"speed":5.33,"deg":242,"clouds":46,"rain":3.42,"snow":0.18},{"dt":1459616400,"temp":{"day":1.77,"min":-1.89,"max":1.77,"night":-0.36,"eve":1.04,"morn":-1.89},"pressure":993.96,"humidity":0,"weather":[{"id":601,"main":"Snow","description":"snow","icon":"13d"}],"speed":10.01,"deg":253,"clouds":61,"rain":4.32,"snow":2.68},{"dt":1459702800,"temp":{"day":-4.49,"min":-9.09,"max":-4.49,"night":-9.09,"eve":-6.74,"morn":-5.03},"pressure":1004.91,"humidity":0,"weather":[{"id":600,"main":"Snow","description":"light snow","icon":"13d"}],"speed":11.2,"deg":309,"clouds":48,"snow":0.29}]}
 ```
 
+**Passing City code as a parameter to the AsyncTask**
+
+Instead of hardcoding the city code, pass it as a parameter to the AsyncTask
+
+```java
+public class MainFragment extends Fragment {
+    private static final String TAG = MainFragment.class.getSimpleName();
+
+    ArrayAdapter<String> weatherDataAdapter;
+
+    @Nullable
+    @Override
+    public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
+        String[] weatherData = {
+                "Monday",
+                "Tuesday",
+                "Wednesday",
+                "Thursday",
+                "Friday",
+                "Saturday",
+                "Sunday"
+        };
+
+        List<String> weatherDataList = new ArrayList<>(Arrays.asList(weatherData));
+
+        weatherDataAdapter = new ArrayAdapter<>(
+                this.getActivity(),
+                R.layout.day_weather_forecast_list_item_layout, /* Point to the resource ID of the layout that contains the view for each item in the list */
+                R.id.day_weather_forecast_list_item_text_view, /* Point to the resource ID of the View in the above specified layout, that the adapter
+                 instantiates per (and initializes with each) data element to display a list of those views/data items in the ListView. */
+                weatherDataList);
+
+        View rootView = inflater.inflate(R.layout.fragment_main, container, false);
+
+        ListView listView = (ListView) rootView.findViewById(R.id.weather_forecast_list_view);
+        listView.setAdapter(weatherDataAdapter);
+
+        Button refreshButton = (Button) rootView.findViewById(R.id.refresh_button);
+        refreshButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                new GetWeatherDataTask().execute("M6R2H6");   <-------------------------------
+            }
+        });
+
+        return rootView;
+    }
+
+    @Override
+    public void onViewCreated(View view, Bundle savedInstanceState)
+    {
+        super.onViewCreated(view, savedInstanceState);
+
+    }
+
+    private URL getURL(String cityCode) {
+        /*
+            URL format is
+
+            http://api.openweathermap.org/data/2.5/forecast/daily?q=<postal code>&mode=<response format>&units=<temp unit>&cnt=<num of day>&APPID=<insert your app key>
+
+            http://api.openweathermap.org/data/2.5/forecast/daily?q=M6R2H6&mode=json&units=metric&cnt=7&APPID=<api key>
+         */
+
+        final String baseUrl = BuildConfig.OPEN_WEATHER_MAP_URL;
+
+        final String cityPathParameterKey = "q";
+        final String cityPathParameterValue = cityCode;
+
+        final String responseFormatPathParameterKey = "mode";
+        final String responseFormatPathParameterValue = "json";
+
+        final String temperatureUnitsPathParameterKey = "units";
+        final String temperatureUnitsPathParameterValue = "metric";
+
+        final String numberOfDaysPathParameterKey = "cnt";
+        final int numberOfDaysPathParameterValue = 7;
+
+        final String apiPathParameterKey = "APPID";
+        final String apiPathParameterValue = BuildConfig.OPEN_WEATHER_MAP_API_KEY;
+
+        Uri uri = Uri.parse(baseUrl).buildUpon()
+                .appendQueryParameter(cityPathParameterKey, cityPathParameterValue)
+                .appendQueryParameter(responseFormatPathParameterKey, responseFormatPathParameterValue)
+                .appendQueryParameter(temperatureUnitsPathParameterKey, temperatureUnitsPathParameterValue)
+                .appendQueryParameter(numberOfDaysPathParameterKey, Integer.toString(numberOfDaysPathParameterValue))
+                .appendQueryParameter(apiPathParameterKey, apiPathParameterValue)
+                .build();
+
+        URL url = null;
+
+        try {
+            //Construct the url to access openweathermap api
+            url = new URL(uri.toString());
+        } catch(MalformedURLException e) {
+            Log.e(TAG, "Error occurred", e);
+            System.exit(0);
+        }
+
+        return url;
+    }
+
+    private String getWeatherData(URL url) {
+        HttpURLConnection urlConnection = null;
+        BufferedReader bufferedReader = null;
+
+        StringBuffer responseBuffer = new StringBuffer();
+
+        try {
+            //Make a request by connecting to the openweathermap api
+            urlConnection = (HttpURLConnection) url.openConnection();
+            urlConnection.setRequestMethod("GET");
+            urlConnection.connect();
+
+            //Read the response
+            InputStream inputStream = urlConnection.getInputStream();
+
+            if(inputStream == null) {
+                return null;
+            }
+
+            bufferedReader = new BufferedReader(new InputStreamReader(inputStream));
+
+            String line = null;
+
+            while ((line = bufferedReader.readLine()) != null) {
+                /*
+                    adding a new line clearly formats json string, which is helpful when printed to the console
+                 */
+                responseBuffer.append(line + "\n");
+            }
+        }catch (IOException e) {
+            Log.e(TAG, "Error occurred", e);
+        } finally {
+            if(urlConnection != null) {
+                urlConnection.disconnect();
+            }
+
+            if(bufferedReader != null) {
+                try {
+                    bufferedReader.close();
+                }catch(IOException e) {
+                    Log.e(TAG, "Error occurred while closing stream", e);
+                }
+            }
+        }
+
+        return (responseBuffer.length() == 0 ? null : responseBuffer.toString());
+    }
+
+    private class GetWeatherDataTask extends AsyncTask<String, Void, Void> {   <-------------------------------
+        private final String TAG = GetWeatherDataTask.class.getSimpleName();
+
+        @Override
+        protected Void doInBackground(String... params) {  <-------------------------------
+            if(params.length == 0) {
+                return null;
+            }
+
+            final String cityCode = params[0];   <-------------------------------
+
+            String weatherDataFromOpenWeatherApi = getWeatherData(getURL(cityCode));  <-------------------------------
+            Log.d(TAG, weatherDataFromOpenWeatherApi);
+            return null;
+        }
+    }
+}
+```
