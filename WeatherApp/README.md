@@ -443,7 +443,7 @@ OPEN_WEATHER_MAP_API_KEY of type String with the API key supplied to it as its v
 
 ```java
 public class MainFragment extends Fragment {
-    private static final String TAG = MainFragment.class.getName();
+    private static final String TAG = MainFragment.class.getSimpleName();
 
     ArrayAdapter<String> weatherDataAdapter;
 
