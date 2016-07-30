@@ -1216,6 +1216,7 @@ Running the app
 **Points to remember**
 
 When an app has to make a network call, it has to 
+
 1. Declare for permission in the manifest to make a network call
 2. Has to be executed on a non-UI thread
 
@@ -1512,6 +1513,493 @@ public class MainFragment extends Fragment {
             String weatherDataFromOpenWeatherApi = getWeatherData(getURL(cityCode));  <-------------------------------
             Log.d(TAG, weatherDataFromOpenWeatherApi);
             return null;
+        }
+    }
+}
+```
+
+Get the weather data received from the api and format it. The format of the weather data is
+
+```json
+{
+  "city": {
+    "id": 2642727,
+    "name": "Meriden",
+    "coord": {
+      "lon": -1.64366,
+      "lat": 52.437698
+    },
+    "country": "GB",
+    "population": 0
+  },
+  "cod": "200",
+  "message": 0.0081,
+  "cnt": 7,
+  "list": [	<------ a list of weather data for number of days requested
+    {		<------ weather data for day 1 - BEGIN
+      "dt": 1469880000,
+      "temp": {
+        "day": 19.94,
+        "min": 12.15,
+        "max": 19.94,
+        "night": 12.15,
+        "eve": 18.13,
+        "morn": 19.94
+      },
+      "pressure": 1014.53,
+      "humidity": 72,
+      "weather": [
+        {
+          "id": 800,
+          "main": "Clear",
+          "description": "clear sky",
+          "icon": "02d"
+        }
+      ],
+      "speed": 4.06,
+      "deg": 325,
+      "clouds": 8
+    },		<------ weather data for day 1 - END
+    {
+      "dt": 1469966400,
+      "temp": {
+        "day": 18.86,
+        "min": 11.39,
+        "max": 18.86,
+        "night": 12.85,
+        "eve": 17.82,
+        "morn": 11.39
+      },
+      "pressure": 1017.94,
+      "humidity": 69,
+      "weather": [
+        {
+          "id": 802,
+          "main": "Clouds",
+          "description": "scattered clouds",
+          "icon": "03d"
+        }
+      ],
+      "speed": 3.66,
+      "deg": 292,
+      "clouds": 44
+    },
+    {
+      "dt": 1470052800,
+      "temp": {
+        "day": 15.94,
+        "min": 12.74,
+        "max": 16.38,
+        "night": 15.81,
+        "eve": 15.15,
+        "morn": 12.74
+      },
+      "pressure": 1018.3,
+      "humidity": 80,
+      "weather": [
+        {
+          "id": 502,
+          "main": "Rain",
+          "description": "heavy intensity rain",
+          "icon": "10d"
+        }
+      ],
+      "speed": 5.47,
+      "deg": 214,
+      "clouds": 100,
+      "rain": 15
+    },
+    {
+      "dt": 1470139200,
+      "temp": {
+        "day": 17.59,
+        "min": 15.87,
+        "max": 19.09,
+        "night": 16.45,
+        "eve": 19.09,
+        "morn": 15.87
+      },
+      "pressure": 1009.45,
+      "humidity": 99,
+      "weather": [
+        {
+          "id": 501,
+          "main": "Rain",
+          "description": "moderate rain",
+          "icon": "10d"
+        }
+      ],
+      "speed": 7.66,
+      "deg": 216,
+      "clouds": 92,
+      "rain": 5.46
+    },
+    {
+      "dt": 1470225600,
+      "temp": {
+        "day": 18.77,
+        "min": 14.4,
+        "max": 19.16,
+        "night": 14.4,
+        "eve": 18.55,
+        "morn": 15.86
+      },
+      "pressure": 1007.6,
+      "humidity": 80,
+      "weather": [
+        {
+          "id": 803,
+          "main": "Clouds",
+          "description": "broken clouds",
+          "icon": "04d"
+        }
+      ],
+      "speed": 9.06,
+      "deg": 250,
+      "clouds": 68
+    },
+    {
+      "dt": 1470312000,
+      "temp": {
+        "day": 20.25,
+        "min": 15.22,
+        "max": 20.25,
+        "night": 15.44,
+        "eve": 19.76,
+        "morn": 15.22
+      },
+      "pressure": 1001.09,
+      "humidity": 0,
+      "weather": [
+        {
+          "id": 500,
+          "main": "Rain",
+          "description": "light rain",
+          "icon": "10d"
+        }
+      ],
+      "speed": 5.76,
+      "deg": 224,
+      "clouds": 61,
+      "rain": 2.44
+    },
+    {
+      "dt": 1470398400,
+      "temp": {
+        "day": 18.6,
+        "min": 14.59,
+        "max": 18.6,
+        "night": 15.1,
+        "eve": 18.3,
+        "morn": 14.59
+      },
+      "pressure": 1006.07,
+      "humidity": 0,
+      "weather": [
+        {
+          "id": 501,
+          "main": "Rain",
+          "description": "moderate rain",
+          "icon": "10d"
+        }
+      ],
+      "speed": 6.5,
+      "deg": 232,
+      "clouds": 23,
+      "rain": 3.2
+    }
+  ]
+}
+```
+
+Create a utility that could parse the weather data from the api.
+
+*com.gruprog.weatherapp/util/WeatherAppUtility.java*
+
+```java
+package com.gruprog.weatherapp.util;
+
+import android.util.Log;
+import org.json.JSONArray;
+import org.json.JSONException;
+import org.json.JSONObject;
+import java.util.Calendar;
+import java.util.GregorianCalendar;
+import java.util.Locale;
+
+public class WeatherAppUtility {
+    private static final String TAG = WeatherAppUtility.class.getName();
+
+    public static String[] getWeatherForecastDataFromJson(String weatherDataFromOpenWeatherApi, int numberOfDays)
+            throws JSONException {
+        final String list = "list";
+        final String weather = "weather";
+        final String temperature = "temp";
+        final String maximumTemperature = "max";
+        final String minimumTemperature = "min";
+        final String weatherQuickSummary = "main";
+
+        JSONObject weatherDataJson = new JSONObject(weatherDataFromOpenWeatherApi);
+        JSONArray weatherDataArray = weatherDataJson.getJSONArray(list);
+
+        /*
+            The OpenWeatherMap API sends the weather data from current day to the next requested number of days in order
+
+            The forecast data returned for a city is based the city's local time.
+         */
+
+        String[] weatherForecastArray = new String[numberOfDays];
+
+        GregorianCalendar gregorianCalendar = new GregorianCalendar();
+
+        long currentTime = System.currentTimeMillis();
+
+        Log.d(TAG, gregorianCalendar.toString());
+        Log.d(TAG, gregorianCalendar.getDisplayName(Calendar.DAY_OF_WEEK, Calendar.SHORT, Locale.US));
+
+        for(int index = 0; index < weatherDataArray.length(); index++) {
+            JSONObject dayWeatherForecast = weatherDataArray.getJSONObject(index);
+            JSONObject weatherObject = dayWeatherForecast.getJSONArray(weather).getJSONObject(0);
+            String desc = weatherObject.getString(weatherQuickSummary);
+            JSONObject temperatureObject = dayWeatherForecast.getJSONObject(temperature);
+
+            String dayOfWeek = gregorianCalendar.getDisplayName(Calendar.DAY_OF_WEEK, Calendar.SHORT, Locale.US);
+
+            double high = temperatureObject.getDouble(maximumTemperature);
+            double low = temperatureObject.getDouble(minimumTemperature);
+
+            weatherForecastArray[index] = dayOfWeek + ":" + desc + " High:" + high + " Low:" + low;
+            Log.d(TAG, desc);
+
+            currentTime = currentTime + 1000 * 60 * 60 * 24;
+            gregorianCalendar.setTimeInMillis(currentTime);
+        }
+
+        return weatherForecastArray;
+    }
+}
+```
+
+Call the utility method from the *doInBackground()* method of the AsyncTask with the data received from the api. The utility method returns an array of Strings with the information that has to be displayed in the list. The *doInBackground()* method returns the String array which is received by the *onPostExecute()* method. Notice how the third type in the generics specified in the AsyncTask is now modified to String[] to match the return type of the *doInBackground()* method and the argument type of the *onPostExecute()* method.
+
+On receiving the String array, the *onPostExecute()* method clears the adapter and repopulates it with the content of the String array. Making changes to the adapter is allowed in *onPostExecute()* method as it is run on the UI thread.
+
+*com.gruprog.weatherapp/MainFragment.java*
+
+```java
+package com.gruprog.weatherapp;
+
+import android.app.LoaderManager;
+import android.content.CursorLoader;
+import android.net.Uri;
+import android.os.AsyncTask;
+import android.os.Bundle;
+import android.support.annotation.Nullable;
+import android.support.v4.app.Fragment;
+import android.util.Log;
+import android.view.LayoutInflater;
+import android.view.View;
+import android.view.ViewGroup;
+import android.widget.ArrayAdapter;
+import android.widget.Button;
+import android.widget.ListView;
+
+import com.gruprog.weatherapp.util.WeatherAppUtility;
+
+import org.json.JSONException;
+
+import java.io.BufferedReader;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.InputStreamReader;
+import java.net.HttpURLConnection;
+import java.net.MalformedURLException;
+import java.net.URL;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
+
+public class MainFragment extends Fragment {
+    private static final String TAG = MainFragment.class.getSimpleName();
+
+    private ArrayAdapter<String> weatherDataAdapter;
+
+    @Nullable
+    @Override
+    public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
+        String[] weatherData = {
+                "Monday",
+                "Tuesday",
+                "Wednesday",
+                "Thursday",
+                "Friday",
+                "Saturday",
+                "Sunday"
+        };
+
+        List<String> weatherDataList = new ArrayList<>(Arrays.asList(weatherData));
+
+        weatherDataAdapter = new ArrayAdapter<>(
+                this.getActivity(),
+                R.layout.day_weather_forecast_list_item_layout, /* Point to the resource ID of the layout that contains the view for each item in the list */
+                R.id.day_weather_forecast_list_item_text_view, /* Point to the resource ID of the View in the above specified layout, that the adapter
+                 instantiates per (and initializes with each) data element to display a list of those views/data items in the ListView. */
+                weatherDataList);
+
+        View rootView = inflater.inflate(R.layout.fragment_main, container, false);
+
+        ListView listView = (ListView) rootView.findViewById(R.id.weather_forecast_list_view);
+        listView.setAdapter(weatherDataAdapter);
+
+        Button refreshButton = (Button) rootView.findViewById(R.id.refresh_button);
+        refreshButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                new GetWeatherDataTask().execute("M6R2H6");
+            }
+        });
+
+        return rootView;
+    }
+
+    @Override
+    public void onViewCreated(View view, Bundle savedInstanceState)
+    {
+        super.onViewCreated(view, savedInstanceState);
+
+    }
+
+    private URL getURL(String cityCode) {
+        /*
+            URL format is
+
+            http://api.openweathermap.org/data/2.5/forecast/daily?q=<postal code>&mode=<response format>&units=<temp unit>&cnt=<num of day>&APPID=<insert your app key>
+
+            http://api.openweathermap.org/data/2.5/forecast/daily?q=M6R2H6&mode=json&units=metric&cnt=7&APPID=<api key>
+         */
+
+        final String baseUrl = BuildConfig.OPEN_WEATHER_MAP_URL;
+
+        final String cityPathParameterKey = "q";
+        final String cityPathParameterValue = cityCode;
+
+        final String responseFormatPathParameterKey = "mode";
+        final String responseFormatPathParameterValue = "json";
+
+        final String temperatureUnitsPathParameterKey = "units";
+        final String temperatureUnitsPathParameterValue = "metric";
+
+        final String numberOfDaysPathParameterKey = "cnt";
+        final int numberOfDaysPathParameterValue = 7;
+
+        final String apiPathParameterKey = "APPID";
+        final String apiPathParameterValue = BuildConfig.OPEN_WEATHER_MAP_API_KEY;
+
+        Uri uri = Uri.parse(baseUrl).buildUpon()
+                .appendQueryParameter(cityPathParameterKey, cityPathParameterValue)
+                .appendQueryParameter(responseFormatPathParameterKey, responseFormatPathParameterValue)
+                .appendQueryParameter(temperatureUnitsPathParameterKey, temperatureUnitsPathParameterValue)
+                .appendQueryParameter(numberOfDaysPathParameterKey, Integer.toString(numberOfDaysPathParameterValue))
+                .appendQueryParameter(apiPathParameterKey, apiPathParameterValue)
+                .build();
+
+        URL url = null;
+
+        try {
+            //Construct the url to access openweathermap api
+            url = new URL(uri.toString());
+        } catch(MalformedURLException e) {
+            Log.e(TAG, "Error occurred", e);
+            System.exit(0);
+        }
+
+        return url;
+    }
+
+    private String getWeatherData(URL url) {
+        HttpURLConnection urlConnection = null;
+        BufferedReader bufferedReader = null;
+
+        StringBuffer responseBuffer = new StringBuffer();
+
+        Log.d(TAG, "Url:" + url);
+
+        try {
+            //Make a request by connecting to the openweathermap api
+            urlConnection = (HttpURLConnection) url.openConnection();
+            urlConnection.setRequestMethod("GET");
+            urlConnection.connect();
+
+            //Read the response
+            InputStream inputStream = urlConnection.getInputStream();
+
+            if(inputStream == null) {
+                return null;
+            }
+
+            bufferedReader = new BufferedReader(new InputStreamReader(inputStream));
+
+            String line = null;
+
+            while ((line = bufferedReader.readLine()) != null) {
+                /*
+                    adding a new line clearly formats json string, which is helpful when printed to the console
+                 */
+                responseBuffer.append(line + "\n");
+            }
+        }catch (IOException e) {
+            Log.e(TAG, "Error occurred", e);
+        } finally {
+            if(urlConnection != null) {
+                urlConnection.disconnect();
+            }
+
+            if(bufferedReader != null) {
+                try {
+                    bufferedReader.close();
+                }catch(IOException e) {
+                    Log.e(TAG, "Error occurred while closing stream", e);
+                }
+            }
+        }
+
+        return (responseBuffer.length() == 0 ? null : responseBuffer.toString());
+    }
+
+    private class GetWeatherDataTask extends AsyncTask<String, Void, String[]> { 	<-------
+        private final String TAG = GetWeatherDataTask.class.getSimpleName();
+
+        @Override
+        protected String[] doInBackground(String... params) {
+            if(params.length == 0) {
+                return null;
+            }
+
+            final String cityCode = params[0];
+
+            String weatherDataFromOpenWeatherApi = getWeatherData(getURL(cityCode));
+            Log.d(TAG, weatherDataFromOpenWeatherApi);
+
+            try {
+                return WeatherAppUtility.getWeatherForecastDataFromJson(weatherDataFromOpenWeatherApi, 7);	<--------
+            }catch(JSONException e) {
+                Log.e(TAG, "Error Occurred", e);
+            }
+
+            return null;
+        }
+
+        @Override
+        protected void onPostExecute(String[] weatherForecastArray) {		<--------
+            if(weatherForecastArray == null) {
+                return;
+            }
+            
+            weatherDataAdapter.clear();
+
+            for(String daysForcastedWeather : weatherForecastArray) {
+                weatherDataAdapter.add(daysForcastedWeather);
+            }
         }
     }
 }
