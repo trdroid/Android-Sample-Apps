@@ -2007,8 +2007,7 @@ public class MainFragment extends Fragment {
 
 **Snapshot**
 
-
-
+![](_misc/AfterFetchingAndPopulatingWeatherData.PNG)
 
 **Fixing the UI**
 
@@ -2076,6 +2075,9 @@ To fix these issues, set the layout_height to 0dp and layout_weight to 1 as show
 </LinearLayout>
 ```
 
+The message displayed by Android Studio on just setting *android:layout_height="0dp"* is 
+
+![](_misc/AndroidStudioMessage.PNG)
 
 ### Issues with the AsyncTask approach
 
