@@ -461,9 +461,11 @@ dependencies {
 The above snippet automatically generates a couple of fields in BuildConfig.java called OPEN_WEATHER_MAP_URL of type String with the URL supplied to it as its value and 
 OPEN_WEATHER_MAP_API_KEY of type String with the API key supplied to it as its value. These fields can then be referred to in code.
 
-A snapshot with OPEN_WEATHER_MAP_API_KEY generated is shown below
+A snapshot with OPEN_WEATHER_MAP_API_KEY generated is shown below. All the fields specified are generated in both the BuildConfig files in different paths as shown in the snapshot. 
 
 ![](_misc/New%20field%20added%20to%20BuildConfig%20files.png)
+
+
 
 ```java
 public class MainFragment extends Fragment {
@@ -805,6 +807,8 @@ public class MainFragment extends Fragment {
 **Refactoring the network calling code to be called from an AsyncTask**
 
 As network calls cannot be made on the main thread, refactor the network code to be called from an AsyncTask.
+
+An AsyncTask allows developers to focus on the business logic by easily allowing them to specify running certain parts of the code on the background thread and certain parts on the UI thread, without having to create and manage custom threads. 
 
 
 ```java
