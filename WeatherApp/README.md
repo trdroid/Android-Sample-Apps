@@ -961,6 +961,17 @@ public class MainFragment extends Fragment {
     }
 }
 ```
+*doInBackground()* method
+
+An AsyncTask SHOULD implement the *doInBackground()* method, while implementing other methods are optional. The *doInBackground()* method is run on a background thread. The *doInBackground* thread can provide progress updates by calling *publishProgress()* at intervals that the app is required to update the user with the progress of a background task. 
+
+*publishProgress()* method
+
+The code in *publishProgress()* method does the work of updating the UI elements to indicate the progress as it is run on the main thread.
+
+*onPostExecute()* method
+
+Once the background work is complete, the *doInBackground()* method can call *onPostExecute()* method by passing it the results from the background work. The *onPostExecute()* method is run on the main thread and can be implemented to update the UI about the completion of a background task.
 
 Add a button to the fragment's layout *res/layout/fragment_main.xml* to fire-up the AsyncTask and fetch the weather data.
 
@@ -1201,6 +1212,12 @@ Running the app
 **Snapshot**
 
 ![](_misc/Snapshot%20with%20button%20to%20refetch%20weather%20data.png)
+
+**Points to remember**
+
+When an app has to make a network call, it has to 
+1. Declare for permission in the manifest to make a network call
+2. Has to be executed on a non-UI thread
 
 Running the app and hitting the "Refresh Weather Data" button resulted in the following because the app is not given the permission to access the internet. 
 
@@ -1499,3 +1516,13 @@ public class MainFragment extends Fragment {
     }
 }
 ```
+
+### Issues with the AsyncTask approach
+
+The issue with creating and using an AsyncTask from an Activity is that its lifetime is tied with that of the Activity's. This implies that when an Acitivity is destroyed on a configuration change, the AsyncTask would also be terminated. If this happens before the background task is completed, then the data would be lost. 
+
+Some approches to resolve this issue are:
+
+1. Using a Service component that runs in the background as it is less likely to be interrupted when compared to an Activity. It could be scheduled using an Inexact Repeating Alarm.
+2. SyncAdapter is designed to schedule background data syncs efficiently. In the presence of a server component, using GCM (Google Cloud Messaging) is a better solution as it can notify the SyncAdapter of any changes on the server side, so that network requests are only initiated when necessary. 
+
