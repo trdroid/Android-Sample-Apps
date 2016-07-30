@@ -2005,6 +2005,78 @@ public class MainFragment extends Fragment {
 }
 ```
 
+**Snapshot**
+
+
+
+
+**Fixing the UI**
+
+The way the "Refresh button" is aligned is not appropriate because
+
+1. It does not align at the bottom of the screen
+2. It is not shown if the number of items in the ListView takes up / exceeds the screen space.
+
+As we are using a LinearLayout (vertical), having the 'wrap_content' value for the height attribute of the ListView would not show the button if the number of items in the ListView needs to take up or exceed the whole screen space. 
+
+*app/res/layout/fragment_main.xml*
+
+```xml
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical"
+    >
+    <ListView
+        android:id="@+id/weather_forecast_list_view"
+        android:paddingLeft="@dimen/weather_forecast_list_view_left_margin"
+        android:paddingRight="@dimen/weather_forecast_list_view_left_margin"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"  <-----------------
+        android:divider="@null"
+        />
+
+    <Button android:id="@+id/refresh_button"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="Refresh Weather Data"
+        android:onClick="onRefreshButtonClick"
+        />
+
+</LinearLayout>
+```
+
+To fix these issues, set the layout_height to 0dp and layout_weight to 1 as shown below
+
+```xml
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical"
+    >
+    <ListView
+        android:id="@+id/weather_forecast_list_view"
+        android:paddingLeft="@dimen/weather_forecast_list_view_left_margin"
+        android:paddingRight="@dimen/weather_forecast_list_view_left_margin"
+        android:layout_width="match_parent"
+        android:layout_height="0dp"	<----------------
+        android:layout_weight="1"	<----------------
+        android:divider="@null"
+        />
+
+    <Button android:id="@+id/refresh_button"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="Refresh Weather Data"
+        android:onClick="onRefreshButtonClick"
+        />
+
+</LinearLayout>
+```
+
+
 ### Issues with the AsyncTask approach
 
 The issue with creating and using an AsyncTask from an Activity is that its lifetime is tied with that of the Activity's. This implies that when an Acitivity is destroyed on a configuration change, the AsyncTask would also be terminated. If this happens before the background task is completed, then the data would be lost. 
