@@ -1,5 +1,8 @@
 package com.gruprog.weatherapp;
 
+import android.app.LoaderManager;
+import android.content.CursorLoader;
+import android.content.Intent;
 import android.net.Uri;
 import android.os.AsyncTask;
 import android.os.Bundle;
@@ -9,9 +12,14 @@ import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.Button;
 import android.widget.ListView;
+
+import com.gruprog.weatherapp.util.WeatherAppUtility;
+
+import org.json.JSONException;
 
 import java.io.BufferedReader;
 import java.io.IOException;
@@ -27,7 +35,7 @@ import java.util.List;
 public class MainFragment extends Fragment {
     private static final String TAG = MainFragment.class.getSimpleName();
 
-    ArrayAdapter<String> weatherDataAdapter;
+    private ArrayAdapter<String> weatherDataAdapter;
 
     @Nullable
     @Override
@@ -55,12 +63,21 @@ public class MainFragment extends Fragment {
 
         ListView listView = (ListView) rootView.findViewById(R.id.weather_forecast_list_view);
         listView.setAdapter(weatherDataAdapter);
+        listView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
+            @Override
+            public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
+                final String weatherData = weatherDataAdapter.getItem(position);
+                final Intent intent = new Intent(getActivity(), WeatherDetailsActivity.class);
+                intent.putExtra(Intent.EXTRA_TEXT, weatherData);
+                startActivity(intent);
+            }
+        });
 
         Button refreshButton = (Button) rootView.findViewById(R.id.refresh_button);
         refreshButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                new GetWeatherDataTask().execute();
+                new GetWeatherDataTask().execute("M6R2H6");
             }
         });
 
@@ -127,6 +144,8 @@ public class MainFragment extends Fragment {
 
         StringBuffer responseBuffer = new StringBuffer();
 
+        Log.d(TAG, "Url:" + url);
+
         try {
             //Make a request by connecting to the openweathermap api
             urlConnection = (HttpURLConnection) url.openConnection();
@@ -169,14 +188,40 @@ public class MainFragment extends Fragment {
         return (responseBuffer.length() == 0 ? null : responseBuffer.toString());
     }
 
-    private class GetWeatherDataTask extends AsyncTask<Void, Void, Void> {
+    private class GetWeatherDataTask extends AsyncTask<String, Void, String[]> {
         private final String TAG = GetWeatherDataTask.class.getSimpleName();
 
         @Override
-        protected Void doInBackground(Void... params) {
-            String weatherDataFromOpenWeatherApi = getWeatherData(getURL("M6R2H6"));
+        protected String[] doInBackground(String... params) {
+            if(params.length == 0) {
+                return null;
+            }
+
+            final String cityCode = params[0];
+
+            String weatherDataFromOpenWeatherApi = getWeatherData(getURL(cityCode));
             Log.d(TAG, weatherDataFromOpenWeatherApi);
+
+            try {
+                return WeatherAppUtility.getWeatherForecastDataFromJson(weatherDataFromOpenWeatherApi, 7);
+            }catch(JSONException e) {
+                Log.e(TAG, "Error Occurred", e);
+            }
+
             return null;
+        }
+
+        @Override
+        protected void onPostExecute(String[] weatherForecastArray) {
+            if(weatherForecastArray == null) {
+                return;
+            }
+
+            weatherDataAdapter.clear();
+
+            for(String daysForcastedWeather : weatherForecastArray) {
+                weatherDataAdapter.add(daysForcastedWeather);
+            }
         }
     }
 }
