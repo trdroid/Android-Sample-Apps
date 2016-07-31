@@ -1784,6 +1784,10 @@ Call the utility method from the *doInBackground()* method of the AsyncTask with
 
 On receiving the String array, the *onPostExecute()* method clears the adapter and repopulates it with the content of the String array. Making changes to the adapter is allowed in *onPostExecute()* method as it is run on the UI thread.
 
+The ArrayAdapter instance internally calls *notifyDataSetChanged()* method on adding or removing data items from the list. This allows the ListView to redraw its items by communicating with the adapter on the total number of items to display and by requesting the adapter for each item to be displayed.
+
+The ArrayAdapter has two instance methods, *add()* and *addAll()* that updates the ListView with the data held by the adapter. The difference is that the *add()* method refreshes the list (i.e. notifies the observers) on adding each data item whereas the *addAll()* method refreshes (i.e. notifies the observers) after adding all the data items.
+
 *com.gruprog.weatherapp/MainFragment.java*
 
 ```java
@@ -2074,6 +2078,10 @@ To fix these issues, set the layout_height to 0dp and layout_weight to 1 as show
 
 </LinearLayout>
 ```
+
+**Snapshot** 
+
+![](_misc/ButtonAlignedAtBottom.PNG)
 
 The message displayed by Android Studio on just setting *android:layout_height="0dp"* is 
 
