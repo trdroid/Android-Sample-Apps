@@ -2393,7 +2393,7 @@ public class WeatherDetailsActivity extends AppCompatActivity {
 }
 ```
 
-1. Set the Activity's layout
+1) Set the Activity's layout
 
 *WeatherApp\app\src\main\res\layout\activity_weather_details.xml*
 
@@ -2408,9 +2408,9 @@ public class WeatherDetailsActivity extends AppCompatActivity {
     android:layout_height="match_parent"/>
 ```
 
-2. Create an instance of WeatherDetailsFragment fragment and add it to the framelayout with the id 'container' as shown above.
+2) Create an instance of WeatherDetailsFragment fragment and add it to the framelayout with the id 'container' as shown above.
 
-3. Inflate the following menu for the Activity, which adds items to the action bar of the Activity if present
+3) Inflate the following menu for the Activity, which adds items to the action bar of the Activity if present
 
 *WeatherApp\app\src\main\res\menu\activity_weather_details_menu.xml*
 
@@ -2427,7 +2427,7 @@ public class WeatherDetailsActivity extends AppCompatActivity {
 </menu>
 ```
 
-If the MainActivity is specified as a parent to WeatherDetailsActivity, then the ActionBar would display an 'Up' button that points to the hierarchical parent Activity which is the MainActivity in this case. In contrast, the back button leads to the Activity that led to WeatherDetailsActivity, which need not necessarily be the MainActivity.
+If the MainActivity is specified as a parent to WeatherDetailsActivity in the manifest, then the ActionBar would display an 'Up' button that points to the hierarchical parent Activity which is the MainActivity in this case. In contrast, the back button leads to the Activity that led to WeatherDetailsActivity, which need not necessarily be the MainActivity.
 
 *WeatherApp\app\src\main\AndroidManifest.xml*
 
@@ -2462,7 +2462,7 @@ If the MainActivity is specified as a parent to WeatherDetailsActivity, then the
 </manifest>
 ```
  
-4. Inflate the following layout in the fragment. Retrieve the intent and obtain the data attached to the intent using the same key that was used to attach the data to the intent (Intent.EXTRA_TEXT in this case). Attach the retrieve data to the textview of the inflated layout.
+4) Inflate the following layout in the fragment. Retrieve the intent and obtain the data attached to the intent using the same key that was used to attach the data to the intent (Intent.EXTRA_TEXT in this case). Attach the retrieve data to the textview of the inflated layout.
 
 *WeatherApp\app\src\main\res\layout\fragment_weather_details.xml*
 
@@ -2480,6 +2480,7 @@ If the MainActivity is specified as a parent to WeatherDetailsActivity, then the
 </LinearLayout>
 ```
 
+![](_misc/WeatherDetailActivity.png)
 
 ### Issues with the AsyncTask approach
 
